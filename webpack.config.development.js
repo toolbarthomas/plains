@@ -1,0 +1,33 @@
+const path = require("path");
+const VueLoaderPlugin = require("vue-loader/lib/plugin");
+
+module.exports = {
+  mode: "development",
+  output: {
+    path: path.join(__dirname, process.env.DIST),
+    publicPath: "/"
+  },
+  devServer: {
+    contentBase: path.join(__dirname, process.env.DIST),
+    publicPath: "/",
+    compress: false,
+    port: 8080
+  },
+  plugins: [new VueLoaderPlugin()],
+  module: {
+    rules: [
+      {
+        test: /\.vue$/,
+        use: "vue-loader"
+      },
+      {
+        test: /\.js$/,
+        use: "babel-loader"
+      },
+      {
+        test: /\.css$/,
+        use: ["vue-style-loader", "css-loader"]
+      }
+    ]
+  }
+};
