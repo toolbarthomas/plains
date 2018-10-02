@@ -1,7 +1,14 @@
 const fs = require("fs");
+const path = require("path");
 
+const ENV = require("./utils/environment");
+
+/**
+ * Use the Webpack configuration file if `PLAINS_ENVIRONMENT` constant is defined.
+ *  Webpack will try to load: `webpack.config.${PLAINS_ENVIRONMENT}.js if it excists.
+ */
 module.exports = () => {
-  let environment_name = process.env.ENVIRONMENT || "production";
+  let environment_name = ENV.PLAINS_ENVIRONMENT || "production";
   let environment_config = `${process.cwd()}/webpack.config.${environment_name.toLowerCase()}.js`;
 
   if (!fs.existsSync(environment_config)) {
@@ -24,7 +31,8 @@ module.exports = () => {
 
   if (typeof config == "object" && Object.keys(config).length > 0) {
     return config;
-  } else {
+  }
+  else {
     console.info(
       `The defined configuration for "${environment_config}" is not a valid configuration object for Webpack.`
     );

@@ -1,14 +1,16 @@
 const path = require("path");
 const VueLoaderPlugin = require("vue-loader/lib/plugin");
 
+const ENV = require("./build/utils/environment");
+
 module.exports = {
   mode: "development",
   output: {
-    path: path.join(__dirname, process.env.DIST),
+    path: path.join(__dirname, ENV.PLAINS_DIST),
     publicPath: "/"
   },
   devServer: {
-    contentBase: path.join(__dirname, process.env.DIST),
+    contentBase: path.join(__dirname, ENV.PLAINS_DIST),
     publicPath: "/",
     compress: false,
     port: 8080
