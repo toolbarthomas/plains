@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+
 const message = require("./message");
 
 /**
@@ -12,6 +13,11 @@ module.exports = {
    * created if there is no dotenv file.
    */
   init() {
+    // Only set the configuration during the first init.
+    if (("PLAINS" in process) && typeof process.PLAINS === "object" && Object.keys(process.PLAINS).length) {
+      return process.PLAINS || {};
+    }
+
     const envPath = `${process.cwd()}/.env`;
 
     // Check if the environment has been created, create one otherwise.
@@ -70,11 +76,14 @@ module.exports = {
      */
     config.PLAINS_SERVER_PORT = process.env.PLAINS_SERVER_PORT || 8080;
 
+    // Mark Plains as enabled since the configuration has been defined.
+    process.PLAINS = config;
+
     /**
      * Notify the user that the environment configration is loaded
      */
     message.info(`Environment configuration loaded from: ${envPath}`);
 
-    return config;
+    return config || {};
   }
 };

@@ -1,8 +1,6 @@
 const path = require("path");
 const VueLoaderPlugin = require("vue-loader/lib/plugin");
 
-const ENV = require("./build/utils/environment");
-
 module.exports = {
   mode: "development",
   output: {
