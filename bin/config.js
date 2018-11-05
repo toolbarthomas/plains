@@ -14,7 +14,7 @@ module.exports = {
    */
   init() {
     // Only set the configuration during the first init.
-    if (("PLAINS" in process) && typeof process.PLAINS === "object" && Object.keys(process.PLAINS).length) {
+    if (this._verifyConfig()) {
       return process.PLAINS || {};
     }
 
@@ -27,6 +27,7 @@ module.exports = {
       message.warning(`No environment ('.env') file has been defined. A fresh new copy has been created in: ${process.cwd()}`);
     }
 
+    // Default configuration for Plains
     const defaults = {
       PLAINS_ENVIRONMENT: "production",
       PLAINS_SRC: path.resolve(process.cwd(), "./src"),
@@ -52,38 +53,42 @@ module.exports = {
       return config;
     }
 
-    /**
-     * Define the current environment for the application.
-     *  Falls back to `defaults.PLAINS_ENVIRONMENT` if `PLAINS_ENVIRONMENT` is not defined.
-     */
+    // Define the current environment for the application.
     config.PLAINS_ENVIRONMENT = process.env.PLAINS_ENVIRONMENT || defaults.PLAINS_ENVIRONMENT;
 
-    /**
-     * Define the source directory for Plains.
-     *  Falls back to `defaults.PLAINS_SRC` if `PLAINS_SRC` is not defined.
-     */
+    // Define the source directory for Plains.
     config.PLAINS_SRC = path.resolve(process.cwd(), (process.env.PLAINS_SRC || defaults.PLAINS_SRC));
 
-    /**
-     * Define the destination directory for Plains.
-     *  Falls back to `defaults.PLAINS_DIST` if `PLAINS_DIST` is not defined.
-     */
+    // Define the destination directory for Plains.
     config.PLAINS_DIST = path.resolve(process.cwd(), (process.env.PLAINS_DIST || defaults.PLAINS_DIST));
 
-    /**
-     * Define the default server-port for the development server.
-     *  Falls back to `defaults.PLAINS_SERVER_PORT` if `PLAINS_SERVER_PORT` is not defined.
-     */
+    // Define the default server-port for the development server.
     config.PLAINS_SERVER_PORT = process.env.PLAINS_SERVER_PORT || 8080;
 
     // Mark Plains as enabled since the configuration has been defined.
     process.PLAINS = config;
 
-    /**
-     * Notify the user that the environment configration is loaded
-     */
-    message.info(`Environment configuration loaded from: ${envPath}`);
+    // Notify the user that the environment configration is loaded
+    message.success(`Environment configuration loaded from: ${envPath}`);
 
     return config || {};
+  },
+
+  /**
+   * Check if the configuration for Plain is already defined
+   *
+   * @returns {Boolean} Returns true if Plains is already configured.
+   */
+  _verifyConfig() {
+    if (!'PLAINS' in process) {
+      return false;
+    }
+
+    if (process.PLAINS instanceof Object && process.PLAINS.constructor === Object) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 };
