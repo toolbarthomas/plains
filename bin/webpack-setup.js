@@ -20,19 +20,21 @@ module.exports = {
    * is set to `development`.
    */
   init() {
-    const webpackDefaultConfig = {
-      mode: "",
-      entry: this.getEntries(),
-      stats: "minimal",
-    };
+    const webpackConfigPath = path.resolve(process.cwd(), "webpack.config.js");
+    let webpackConfig = {};
+
+    // Use the defined default configuration of Webpack as base configuration.
+    if (fs.existsSync(webpackConfigPath)) {
+      webpackConfig = require(webpackConfigPath);
+    }
 
     // Define all configuration for the defined Plains environment.
-    const webpackEnvironmentConfig = this.getEnvironmentConfig();
+    const environmentConfig = this.getEnvironmentConfig();
 
     // Return the merged Webpack configuration.
     return webpackMerge(
-      webpackDefaultConfig,
-      webpackEnvironmentConfig
+      webpackConfig,
+      environmentConfig
     );
   },
 
@@ -41,31 +43,31 @@ module.exports = {
    * Webpack will try to load: `webpack.config.${PLAINS_ENVIRONMENT}.js if it exists.
    */
   getEnvironmentConfig() {
-    let environmentConfigPath = `${process.cwd()}/webpack.config.${config.PLAINS_ENVIRONMENT.toLowerCase()}.js`;
+    const environmentConfigPath = path.resolve(process.cwd(), `webpack.config.${config.PLAINS_ENVIRONMENT}.js`);
 
     // Check if the webpack configuration exists for the defined PLAINS_ENVIRONMENT.
     if (!fs.existsSync(environmentConfigPath)) {
-      message.info(`The webpack configuration file for "${config.PLAINS_ENVIRONMENT}" could not been found.`);
+      message.warning(`The webpack configuration file for "${config.PLAINS_ENVIRONMENT}" could not been found.`);
 
-      message.info(`Webpack will ignore the specific configuration for "${config.PLAINS_ENVIRONMENT}".`);
+      message.warning(`Webpack will ignore the specific configuration for "${config.PLAINS_ENVIRONMENT}".`);
 
-      message.info(`Be sure to create a Webpack configuration specific for "${config.PLAINS_ENVIRONMENT}".`);
+      message.warning(`Be sure to create a Webpack configuration specific for "${config.PLAINS_ENVIRONMENT}".`);
 
       return {};
-    }
-
-    let environmentConfig = require(environmentConfigPath);
-
-    // Return the Webpack configuration object if it exists.
-    if (environmentConfig instanceof Object && environmentConfig.constructor === "object") {
-      return environmentConfig;
     }
     else {
-      message.info(`The defined configuration for "${config.PLAINS_ENVIRONMENT}" is not a valid configuration object for Webpack.`);
+      let environmentConfig = require(environmentConfigPath);
 
-      message.info(`Webpack will ignore the specific configuration for ${config.PLAINS_ENVIRONMENT}.`);
+      if (environmentConfig instanceof Object && environmentConfig.constructor === "object") {
+        return environmentConfig;
+      }
+      else {
+        message.warning(`The defined configuration for "${config.PLAINS_ENVIRONMENT}" is not a valid configuration object for Webpack.`);
 
-      return {};
+        message.warning(`Webpack will ignore the specific configuration for "${config.PLAINS_ENVIRONMENT}".`);
+
+        return {};
+      }
     }
   },
 
