@@ -2,7 +2,7 @@ const fs = require("fs");
 const glob = require("glob");
 const path = require("path");
 
-const ENV = require("./utils/environment");
+const ENV = require("./utils/environment").init();
 
 /**
  * Define one or more entry files for Webpack, each entry file is defined as a

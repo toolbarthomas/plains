@@ -2,7 +2,7 @@ const glob = require("glob");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 
-const ENV = require("./utils/environment");
+const ENV = require("./utils/environment").init();
 
 /**
  * Generates the page-template for each valid Webpack entry file.

@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const ENV = require("./utils/environment");
+const ENV = require("./utils/environment").init();
 
 /**
  * Use the Webpack configuration file if `PLAINS_ENVIRONMENT` constant is defined.

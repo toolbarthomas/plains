@@ -1,31 +1,43 @@
 const chalk = require('chalk');
-const path = require('path');
+const symbols = require("log-symbols");
 
-/**
- * Dislay a messages with Chalk with an reference to the defined module.
- *
- * @param {String} message The actual message to display.
- * @param {String} type Defines the color of the message.
- */
-module.exports = (message, type) => {
-  const label = `[ ${path
-    .basename(module.parent.filename, '.js')
-    .toUpperCase()} ]`;
+module.exports = {
 
-  const ouput = `${label} ${message}`;
+  /**
+   * Prints out an error message & exit the current process.
+   *
+   * @param {*} message Message to ouput.
+   */
+  error(message) {
+    console.error(symbols.error, chalk.red(message));
 
-  switch (type) {
-    case 'error':
-      console.error(chalk.red(ouput));
-      break;
-    case 'warning':
-      console.error(chalk.orange(ouput));
-      break;
-    case 'success':
-      console.error(chalk.green(ouput));
-      break;
-    default:
-      console.log(chalk.yellow(ouput));
-      break;
+    process.exit(1);
+  },
+
+  /**
+   * Prints out a warning message.
+   *
+   * @param {*} message Message to ouput.
+   */
+  warning(message) {
+    console.warn(symbols.warning, chalk.yellow(message));
+  },
+
+  /**
+   * Prints out an success message.
+   *
+   * @param {*} message Message to ouput.
+   */
+  success(message) {
+    console.log(symbols.success, chalk.green(message));
+  },
+
+  /**
+   * Prints out an info message.
+   *
+   * @param {*} message Message to ouput.
+   */
+  info(message) {
+    console.info(symbols.info, chalk.blue(message));
   }
 };
