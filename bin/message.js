@@ -1,14 +1,14 @@
-const chalk = require('chalk');
-const symbols = require('log-symbols');
+const chalk = require("chalk");
+const symbols = require("log-symbols");
 
 module.exports = {
-
   /**
    * Prints out an error message & exit the current process.
    *
-   * @param {*} message Message to ouput.
+   * @param {String} message Message to ouput.
    */
   error(message) {
+    // eslint-disable-next-line no-console
     console.error(symbols.error, chalk.red(message));
 
     process.exit(1);
@@ -17,27 +17,30 @@ module.exports = {
   /**
    * Prints out a warning message.
    *
-   * @param {*} message Message to ouput.
+   * @param {String} message Message to ouput.
    */
   warning(message) {
+    // eslint-disable-next-line no-console
     console.warn(symbols.warning, chalk.yellow(message));
   },
 
   /**
    * Prints out an success message.
    *
-   * @param {*} message Message to ouput.
+   * @param {String} message Message to ouput.
    */
   success(message) {
+    // eslint-disable-next-line no-console
     console.log(symbols.success, chalk.green(message));
   },
 
   /**
    * Prints out an info message.
    *
-   * @param {*} message Message to ouput.
+   * @param {String} message Message to ouput.
    */
   info(message) {
+    // eslint-disable-next-line no-console
     console.info(symbols.info, chalk.blue(message));
   },
 };

@@ -1,14 +1,14 @@
-const fs = require('fs');
-const path = require('path');
-const env = require('dotenv');
+const fs = require("fs");
+const path = require("path");
+// eslint-disable-next-line import/no-extraneous-dependencies
+const env = require("dotenv");
 
-const message = require('./message');
+const message = require("./message");
 
 /**
  * Define the environment constants used by Plains.
  */
 module.exports = {
-
   /**
    * Define the current environment for Plains. An environment file will be
    * created if there is no dotenv file.
@@ -23,16 +23,18 @@ module.exports = {
 
     // Check if the environment has been created, create one otherwise.
     if (!fs.existsSync(envPath)) {
-      fs.writeFileSync(envPath, '', 'utf8');
+      fs.writeFileSync(envPath, "", "utf8");
 
-      message.warning(`No environment ('.env') file has been defined. A fresh new copy has been created in: ${process.cwd()}`);
+      message.warning(
+        `No environment ('.env') file has been defined. A fresh new copy has been created in: ${process.cwd()}`
+      );
     }
 
     // Default configuration for Plains
     const defaults = {
-      PLAINS_ENVIRONMENT: 'production',
-      PLAINS_SRC: path.resolve(process.cwd(), './src'),
-      PLAINS_DIST: path.resolve(process.cwd(), './dist'),
+      PLAINS_ENVIRONMENT: "production",
+      PLAINS_SRC: path.resolve(process.cwd(), "./src"),
+      PLAINS_DIST: path.resolve(process.cwd(), "./dist"),
       PLAINS_SERVER_PORT: 8080,
     };
 
@@ -58,13 +60,12 @@ module.exports = {
     config.PLAINS_ENVIRONMENT = process.env.PLAINS_ENVIRONMENT || defaults.PLAINS_ENVIRONMENT;
 
     // Define the source directory for Plains.
-    config.PLAINS_SRC = path.resolve(
-      process.cwd(), (process.env.PLAINS_SRC || defaults.PLAINS_SRC),
-    );
+    config.PLAINS_SRC = path.resolve(process.cwd(), process.env.PLAINS_SRC || defaults.PLAINS_SRC);
 
     // Define the destination directory for Plains.
     config.PLAINS_DIST = path.resolve(
-      process.cwd(), (process.env.PLAINS_DIST || defaults.PLAINS_DIST),
+      process.cwd(),
+      process.env.PLAINS_DIST || defaults.PLAINS_DIST
     );
 
     // Define the default server-port for the development server.
@@ -85,7 +86,7 @@ module.exports = {
    * @returns {Boolean} Returns true if Plains is already configured.
    */
   verifyConfig() {
-    if (!('PLAINS' in process)) {
+    if (!("PLAINS" in process)) {
       return false;
     }
 
