@@ -7,29 +7,29 @@ module.exports = {
   mode: "development",
   output: {
     path: path.join(__dirname, config.PLAINS_DIST),
-    publicPath: "/"
+    publicPath: "/",
   },
   devServer: {
     contentBase: path.join(__dirname, config.PLAINS_DIST),
     publicPath: "/",
     compress: false,
-    port: 8080
+    port: 8080,
   },
   plugins: [new VueLoaderPlugin()],
   module: {
     rules: [
       {
         test: /\.vue$/,
-        use: "vue-loader"
+        use: "vue-loader",
       },
       {
         test: /\.js$/,
-        use: "babel-loader"
+        use: "babel-loader",
       },
       {
         test: /\.css$/,
-        use: ["vue-style-loader", "css-loader"]
-      }
-    ]
-  }
+        use: ["vue-style-loader", "css-loader"],
+      },
+    ],
+  },
 };
