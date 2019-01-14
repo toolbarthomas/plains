@@ -8,6 +8,12 @@ const webpackMerge = require("webpack-merge");
 const config = require("./config").init();
 const message = require("./message");
 
+const webpackConfig = require(
+  path.resolve(process.cwd(), "webpack.config.js")
+).resolve({});
+
+console.log(webpackConfig);
+
 module.exports = {
 
   /**

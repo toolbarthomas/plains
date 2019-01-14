@@ -1,5 +1,5 @@
 {
-  "name": "totem-ui",
+  "name": "plains",
   "version": "0.1.0",
   "description": "Build modular interfaces for the web.",
   "main": "index.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/toolbarthomas/totem-ui.git"
+    "url": "git+https://github.com/toolbarthomas/plains.git"
   },
   "keywords": [
     "css",
@@ -23,9 +23,9 @@
   "author": "Thomas van der Velde <contact@toolbarthomas.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/toolbarthomas/totem-ui/issues"
+    "url": "https://github.com/toolbarthomas/plains/issues"
   },
-  "homepage": "https://github.com/toolbarthomas/totem-ui#readme",
+  "homepage": "https://github.com/toolbarthomas/plains#readme",
   "dependencies": {
     "log-symbols": "^2.2.0",
     "vue": "^2.5.17",
@@ -37,6 +37,9 @@
     "babel-loader": "^8.0.0",
     "css-loader": "^1.0.0",
     "dotenv": "^6.0.0",
+    "eslint": "^5.8.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
     "html-webpack-plugin": "^3.2.0",
     "lodash": "^4.17.10",
     "path": "^0.12.7",

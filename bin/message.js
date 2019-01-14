@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-const symbols = require("log-symbols");
+const symbols = require('log-symbols');
 
 module.exports = {
 
@@ -39,5 +39,5 @@ module.exports = {
    */
   info(message) {
     console.info(symbols.info, chalk.blue(message));
-  }
+  },
 };
