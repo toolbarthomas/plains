@@ -69,20 +69,26 @@ module.exports = {
      * Check if the existing configuration is a valid Javascript Object.
      * Ouput a warning if the configuration file is invalid.
      */
-    if (environmentConfig instanceof Object && environmentConfig.constructor === Object) {
-      return environmentConfig;
+    if (!(environmentConfig instanceof Object) || environmentConfig.constructor !== Object) {
+      message.warning(
+        `The defined configuration for "${config.PLAINS_ENVIRONMENT}"
+        is not a valid configuration object for Webpack.`
+      );
+
+      message.warning(
+        `Webpack will ignore the specific configuration for "${config.PLAINS_ENVIRONMENT}".`
+      );
+
+      return {};
     }
 
-    message.warning(
-      `The defined configuration for "${config.PLAINS_ENVIRONMENT}"
-      is not a valid configuration object for Webpack.`
-    );
+    const entry = this.getEntries();
 
-    message.warning(
-      `Webpack will ignore the specific configuration for "${config.PLAINS_ENVIRONMENT}".`
-    );
+    if (entry instanceof Object && Object.keys(entry).length > 0) {
+      environmentConfig['entry'] = entry;
+    }
 
-    return {};
+    return environmentConfig;
   },
 
   /**
@@ -121,38 +127,39 @@ module.exports = {
   },
 
   /**
-   * Generates the page-template for each valid Webpack entry file.
+   * Generates a page template for each Webpack entry file.
    */
   getPages() {
-    const pages = glob.sync(`${config.PLAINS_SRC}/templates/*/index.html`);
+    const templates = glob.sync(`${config.PLAINS_SRC}/templates/*/index.html`);
 
-    if (pages.length === 0) {
+    if (templates.length === 0) {
       return;
     }
 
-    const plugins = [];
+    // Store each rendered Webpack Html page.
+    const pages = [];
 
-    pages.forEach(page => {
-      const filename = page.replace(`${config.PLAINS_SRC}/`, "");
-      const extension = path.extname(page);
+    templates.forEach(template => {
+      const filename = template.replace(`${config.PLAINS_SRC}/`, "");
+      const extension = path.extname(template);
 
       // Scopes the related entry file to our template.
-      const chunks = [page.replace(`${config.PLAINS_SRC}/`, "").replace(extension, "")];
+      const chunks = [template.replace(`${config.PLAINS_SRC}/`, "").replace(extension, "")];
 
-      const plugin = new HtmlWebpackPlugin({
+      const page = new HtmlWebpackPlugin({
         filename,
-        template: page,
+        template,
         chunks,
       });
 
-      if (!plugin) {
+      if (!page) {
         return;
       }
 
-      plugins.push(plugin);
+      pages.push(page);
     });
 
     // eslint-disable-next-line consistent-return
-    return plugins;
+    return pages;
   },
 };

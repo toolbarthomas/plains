@@ -6,11 +6,11 @@ const config = require("./bin/config").init();
 module.exports = {
   mode: "development",
   output: {
-    path: path.join(__dirname, config.PLAINS_DIST),
+    path: config.PLAINS_DIST,
     publicPath: "/",
   },
   devServer: {
-    contentBase: path.join(__dirname, config.PLAINS_DIST),
+    contentBase: config.PLAINS_DIST,
     publicPath: "/",
     compress: false,
     port: 8080,
