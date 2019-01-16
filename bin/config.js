@@ -1,20 +1,15 @@
 const fs = require("fs");
 const path = require("path");
-// eslint-disable-next-line import/no-extraneous-dependencies
 const env = require("dotenv");
 
 const message = require("./message");
 
 /**
- * Define the environment constants used by Plains.
+ * Define the global configuration based on the current environment.
+ * Plains will use the default production configuration if no environment has been defined.
  */
 module.exports = {
-  /**
-   * Define the current environment for Plains. An environment file will be
-   * created if there is no dotenv file.
-   */
   init() {
-    // Only set the configuration during the first init.
     if (this.verifyConfig()) {
       return process.PLAINS || {};
     }
@@ -81,7 +76,7 @@ module.exports = {
   },
 
   /**
-   * Check if the configuration for Plain is already defined
+   * Check if the configuration for Plains is already defined
    *
    * @returns {Boolean} Returns true if Plains is already configured.
    */
@@ -90,10 +85,6 @@ module.exports = {
       return false;
     }
 
-    if (process.PLAINS instanceof Object && process.PLAINS.constructor === Object) {
-      return true;
-    }
-
-    return false;
+    return process.PLAINS instanceof Object && process.PLAINS.constructor === Object;
   },
 };
