@@ -1,5 +1,17 @@
 const webpack = require("webpack");
-const webpackSetup = require("./bin/webpack-setup").init();
+const WebpackDevServer = require("webpack-dev-server");
 
-// Run webpack with the custom configuration.
-webpack(webpackSetup);
+const webpackConfig = require("./bin/webpack-config").init();
+
+const app = () => {
+  const compiler = webpack(webpackConfig);
+  const { devServer } = webpackConfig;
+
+  const server = new WebpackDevServer(compiler, devServer || {});
+
+  server.listen(devServer.port, devServer.host, () => {
+    console.log(`Project running at ${devServer.host}:${devServer.port}`);
+  });
+};
+
+app();

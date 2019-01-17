@@ -31,8 +31,11 @@ module.exports = {
     // Define all configuration for the defined Plains environment.
     const environmentConfig = this.getEnvironmentConfig();
 
+    // Define the configuration for each entry file defined within the `templates` directory.
+    const entryConfig = this.getTemplateConfig();
+
     // Return the merged Webpack configuration.
-    return webpackMerge(webpackConfig, environmentConfig);
+    return webpackMerge(webpackConfig, environmentConfig, entryConfig);
   },
 
   /**
@@ -82,12 +85,6 @@ module.exports = {
       return {};
     }
 
-    const entry = this.getEntries();
-
-    if (entry instanceof Object && Object.keys(entry).length > 0) {
-      environmentConfig['entry'] = entry;
-    }
-
     return environmentConfig;
   },
 
@@ -95,71 +92,48 @@ module.exports = {
    * Define one or more entry files for Webpack, each entry file is defined as
    * a subdirectory within the `templates` directory in the `PLAINS_SRC` directory.
    */
-  getEntries() {
+  getTemplateConfig() {
     const templates = glob.sync(`${config.PLAINS_SRC}/templates/*/index.js`);
 
-    const entries = {};
+    const templateConfig = {
+      entry: {},
+      plugins: [],
+    };
 
-    if (!templates || !templates.length) {
-      return entries;
+    if (templates && templates.length > 0) {
+      templates.forEach(template => {
+        const stats = fs.statSync(template);
+
+        // Skip empty entry files.
+        if (!stats.size) {
+          return;
+        }
+
+        // Strip out the extension before defining the entry key.
+        const extension = path.extname(template);
+
+        // Define the entry key for the current Webpack entry file.
+        const name = template.replace(`${config.PLAINS_SRC}/`, "").replace(extension, "");
+
+        // Create a new HtmlWebpack plugin to create a html file.
+        const page = new HtmlWebpackPlugin({
+          filename: `${name}.html`,
+        });
+
+        // Queue the current entry file
+        templateConfig.entry[name] = [template];
+
+        // Include HMR middleware for development environments.
+        if (config.PLAINS_ENVIRONMENT === "development") {
+          templateConfig.entry[name].unshift(`webpack-dev-server/client?${config.PLAINS_SERVER_ADDRESS}`);
+        }
+
+        // Queue the current entry file for Webpack.
+        templateConfig.plugins.push(page);
+      });
     }
-
-    templates.forEach(template => {
-      const stats = fs.statSync(template);
-
-      // Skip empty entry files.
-      if (!stats.size) {
-        return;
-      }
-
-      // Strip out the extension before defining the entry key.
-      const extension = path.extname(template);
-
-      // Define the entry key for the current Webpack entry file.
-      const name = template.replace(`${config.PLAINS_SRC}/`, "").replace(extension, "");
-
-      // Queue the current entry file
-      entries[name] = template;
-    });
 
     // Return all entry files.
-    return entries;
-  },
-
-  /**
-   * Generates a page template for each Webpack entry file.
-   */
-  getPages() {
-    const templates = glob.sync(`${config.PLAINS_SRC}/templates/*/index.html`);
-
-    if (templates.length === 0) {
-      return;
-    }
-
-    // Store each rendered Webpack Html page.
-    const pages = [];
-
-    templates.forEach(template => {
-      const filename = template.replace(`${config.PLAINS_SRC}/`, "");
-      const extension = path.extname(template);
-
-      // Scopes the related entry file to our template.
-      const chunks = [template.replace(`${config.PLAINS_SRC}/`, "").replace(extension, "")];
-
-      const page = new HtmlWebpackPlugin({
-        filename,
-        template,
-        chunks,
-      });
-
-      if (!page) {
-        return;
-      }
-
-      pages.push(page);
-    });
-
-    // eslint-disable-next-line consistent-return
-    return pages;
+    return templateConfig;
   },
 };

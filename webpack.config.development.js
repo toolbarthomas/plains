@@ -10,10 +10,13 @@ module.exports = {
     publicPath: "/",
   },
   devServer: {
-    contentBase: config.PLAINS_DIST,
-    publicPath: "/",
     compress: false,
-    port: 8080,
+    contentBase: config.PLAINS_DIST,
+    inline: true,
+    host: config.PLAINS_HOSTNAME,
+    open: true,
+    publicPath: "/",
+    port: config.PLAINS_PORT,
   },
   plugins: [new VueLoaderPlugin()],
   module: {

@@ -30,7 +30,8 @@ module.exports = {
       PLAINS_ENVIRONMENT: "production",
       PLAINS_SRC: path.resolve(process.cwd(), "./src"),
       PLAINS_DIST: path.resolve(process.cwd(), "./dist"),
-      PLAINS_SERVER_PORT: 8080,
+      PLAINS_HOSTNAME: "127.0.0.1",
+      PLAINS_PORT: 8080,
     };
 
     // Load the environment file defined within the current working directory.
@@ -63,8 +64,13 @@ module.exports = {
       process.env.PLAINS_DIST || defaults.PLAINS_DIST
     );
 
-    // Define the default server-port for the development server.
-    config.PLAINS_SERVER_PORT = process.env.PLAINS_SERVER_PORT || 8080;
+    // Defines the hostname for the development server.
+    config.PLAINS_HOSTNAME = (process.env.PLAINS_HOSTNAME || "127.0.0.1").replace(/(^\w+:|^)\/\//, "");
+
+    // Define the default port for the development server.
+    config.PLAINS_PORT = process.env.PLAINS_PORT || 8080;
+
+    config.PLAINS_SERVER_ADDRESS = `http://${config.PLAINS_HOSTNAME}:${config.PLAINS_PORT}`;
 
     // Mark Plains as enabled since the configuration has been defined.
     process.PLAINS = config;
