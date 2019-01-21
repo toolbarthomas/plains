@@ -32,7 +32,7 @@ module.exports = {
     const environmentConfig = this.getEnvironmentConfig();
 
     // Define the configuration for each entry file defined within the `templates` directory.
-    const entryConfig = this.getTemplateConfig();
+    const entryConfig = this.getEntryConfig();
 
     // Return the merged Webpack configuration.
     return webpackMerge(webpackConfig, environmentConfig, entryConfig);
@@ -92,17 +92,17 @@ module.exports = {
    * Define one or more entry files for Webpack, each entry file is defined as
    * a subdirectory within the `templates` directory in the `PLAINS_SRC` directory.
    */
-  getTemplateConfig() {
-    const templates = glob.sync(`${config.PLAINS_SRC}/templates/*/index.js`);
+  getEntryConfig() {
+    const entries = glob.sync(`${config.PLAINS_SRC}/templates/*/index.js`);
 
     const templateConfig = {
       entry: {},
       plugins: [],
     };
 
-    if (templates && templates.length > 0) {
-      templates.forEach(template => {
-        const stats = fs.statSync(template);
+    if (entries.length > 0) {
+      entries.forEach(entry => {
+        const stats = fs.statSync(entry);
 
         // Skip empty entry files.
         if (!stats.size) {
@@ -110,22 +110,35 @@ module.exports = {
         }
 
         // Strip out the extension before defining the entry key.
-        const extension = path.extname(template);
+        const extension = path.extname(entry);
 
         // Define the entry key for the current Webpack entry file.
-        const name = template.replace(`${config.PLAINS_SRC}/`, "").replace(extension, "");
+        const name = entry.replace(`${config.PLAINS_SRC}/`, "").replace(extension, "");
+
+        // Define the path of the optional json file for the current template.
+        const jsonPath = entry.replace(extension, ".json");
+
+        const defaults = {
+          filename: `${name}.html`
+        }
+
+        /**
+         * Defines the options from the optional json file located within current
+         * template directory.
+         */
+        const options = Object.assign(defaults, this.getTemplateOptions(jsonPath));
 
         // Create a new HtmlWebpack plugin to create a html file.
-        const page = new HtmlWebpackPlugin({
-          filename: `${name}.html`,
-        });
+        const page = new HtmlWebpackPlugin(options);
 
         // Queue the current entry file
-        templateConfig.entry[name] = [template];
+        templateConfig.entry[name] = [entry];
 
         // Include HMR middleware for development environments.
-        if (config.PLAINS_ENVIRONMENT === "development") {
-          templateConfig.entry[name].unshift(`webpack-dev-server/client?${config.PLAINS_SERVER_ADDRESS}`);
+        if (this.getEnvironmentConfig().devServer instanceof Object) {
+          templateConfig.entry[name].unshift(
+            `webpack-dev-server/client?${config.PLAINS_SERVER_ADDRESS}`
+          );
         }
 
         // Queue the current entry file for Webpack.
@@ -136,4 +149,27 @@ module.exports = {
     // Return all entry files.
     return templateConfig;
   },
+
+  /**
+   * Define any options that are defined for the current template.
+   *
+   * @param {String} jsonPath The path to the defined json file from the given entry.
+   */
+  getTemplateOptions(jsonPath) {
+    let options = {};
+
+    if (fs.existsSync(jsonPath) && fs.statSync(jsonPath).size) {
+      try {
+        const file = fs.readFileSync(jsonPath, 'utf8');
+
+        options = JSON.parse(file);
+      } catch (error) {
+        message.warning(
+          `The optional json file at '${jsonPath}' is not valid and will be ignored.`
+        );
+      }
+    }
+
+    return options;
+  }
 };
