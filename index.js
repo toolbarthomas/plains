@@ -1,23 +1,31 @@
-const webpack = require('webpack');
+const Webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
+
 const webpackConfig = require('./bin/webpack-config').init();
+const webpackOutput = require('./bin/webpack-output');
+const message = require('./bin/message');
 
 const app = () => {
+  message.info('Starting Webpack...');
+
   if (webpackConfig.devServer) {
-    const compiler = webpack(webpackConfig);
+    const compiler = Webpack(webpackConfig);
+
     const { devServer } = webpackConfig;
-    const server = new WebpackDevServer(compiler, devServer || {});
+
+    // Inherit the stats option from the defined Webpack environment configuration.
+    if (!devServer.stats && webpackConfig.stats) {
+      devServer.stats = webpackConfig.stats;
+    }
+
+    const server = new WebpackDevServer(compiler, devServer);
 
     server.listen(devServer.port, devServer.host, () => {
-      console.log(`Project running at ${devServer.host}:${devServer.port}`);
+      message.info(`App running and server from: ${devServer.host}:${devServer.port}`);
     });
   } else {
-    webpack(webpackConfig, (err, stats) => {
-      if (err || stats.hasErrors()) {
-        throw new Error(err);
-      }
-
-      console.log('Done');
+    Webpack(webpackConfig, (err, stats) => {
+      webpackOutput(err, stats, webpackConfig);
     });
   }
 };

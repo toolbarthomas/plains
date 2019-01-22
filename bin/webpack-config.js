@@ -1,12 +1,12 @@
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const fs = require("fs");
-const glob = require("glob");
-const path = require("path");
-const webpackMerge = require("webpack-merge");
+const fs = require('fs');
+const glob = require('glob');
+const path = require('path');
+const webpackMerge = require('webpack-merge');
 
-const config = require("./config").init();
-const message = require("./message");
+const config = require('./environment-config').init();
+const message = require('./message');
 
 module.exports = {
   /**
@@ -19,7 +19,7 @@ module.exports = {
    * is set to `development`.
    */
   init() {
-    const webpackConfigPath = path.resolve(process.cwd(), "webpack.config.js");
+    const webpackConfigPath = path.resolve(process.cwd(), 'webpack.config.js');
     let webpackConfig = {};
 
     // Use the defined default configuration of Webpack as base configuration.
@@ -113,10 +113,10 @@ module.exports = {
         const extension = path.extname(entry);
 
         // Define the entry key for the current Webpack entry file.
-        const name = entry.replace(`${config.PLAINS_SRC}/`, "").replace(extension, "");
+        const name = entry.replace(`${config.PLAINS_SRC}/`, '').replace(extension, '');
 
         // Define the path of the optional json file for the current template.
-        const jsonPath = entry.replace(extension, ".json");
+        const jsonPath = entry.replace(extension, '.json');
 
         const defaults = {
           filename: `${name}.html`,
@@ -135,7 +135,10 @@ module.exports = {
         templateConfig.entry[name] = [entry];
 
         // Include HMR middleware for development environments.
-        if (this.getEnvironmentConfig().devServer instanceof Object) {
+        if (
+          config.PLAINS_ENVIRONMENT === 'development' &&
+          this.getEnvironmentConfig().devServer instanceof Object
+        ) {
           templateConfig.entry[name].unshift(
             `webpack-dev-server/client?${config.PLAINS_SERVER_ADDRESS}`
           );
@@ -160,7 +163,7 @@ module.exports = {
 
     if (fs.existsSync(jsonPath) && fs.statSync(jsonPath).size) {
       try {
-        const file = fs.readFileSync(jsonPath, "utf8");
+        const file = fs.readFileSync(jsonPath, 'utf8');
 
         options = JSON.parse(file);
       } catch (error) {

@@ -1,8 +1,8 @@
-const fs = require("fs");
-const path = require("path");
-const env = require("dotenv");
+const fs = require('fs');
+const path = require('path');
+const env = require('dotenv');
 
-const message = require("./message");
+const message = require('./message');
 
 /**
  * Define the global configuration based on the current environment.
@@ -18,7 +18,7 @@ module.exports = {
 
     // Check if the environment has been created, create one otherwise.
     if (!fs.existsSync(envPath)) {
-      fs.writeFileSync(envPath, "", "utf8");
+      fs.writeFileSync(envPath, '', 'utf8');
 
       message.warning(
         `No environment ('.env') file has been defined. A fresh new copy has been created in: ${process.cwd()}`
@@ -27,10 +27,10 @@ module.exports = {
 
     // Default configuration for Plains
     const defaults = {
-      PLAINS_ENVIRONMENT: "production",
-      PLAINS_SRC: path.resolve(process.cwd(), "./src"),
-      PLAINS_DIST: path.resolve(process.cwd(), "./dist"),
-      PLAINS_HOSTNAME: "127.0.0.1",
+      PLAINS_ENVIRONMENT: 'production',
+      PLAINS_SRC: path.resolve(process.cwd(), './src'),
+      PLAINS_DIST: path.resolve(process.cwd(), './dist'),
+      PLAINS_HOSTNAME: '127.0.0.1',
       PLAINS_PORT: 8080,
     };
 
@@ -65,7 +65,10 @@ module.exports = {
     );
 
     // Defines the hostname for the development server.
-    config.PLAINS_HOSTNAME = (process.env.PLAINS_HOSTNAME || "127.0.0.1").replace(/(^\w+:|^)\/\//, "");
+    config.PLAINS_HOSTNAME = (process.env.PLAINS_HOSTNAME || '127.0.0.1').replace(
+      /(^\w+:|^)\/\//,
+      ''
+    );
 
     // Define the default port for the development server.
     config.PLAINS_PORT = process.env.PLAINS_PORT || 8080;
@@ -87,7 +90,7 @@ module.exports = {
    * @returns {Boolean} Returns true if Plains is already configured.
    */
   verifyConfig() {
-    if (!("PLAINS" in process)) {
+    if (!('PLAINS' in process)) {
       return false;
     }
 

@@ -1,5 +1,5 @@
-const chalk = require("chalk");
-const symbols = require("log-symbols");
+const chalk = require('chalk');
+const symbols = require('log-symbols');
 
 module.exports = {
   /**
