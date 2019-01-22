@@ -119,8 +119,8 @@ module.exports = {
         const jsonPath = entry.replace(extension, ".json");
 
         const defaults = {
-          filename: `${name}.html`
-        }
+          filename: `${name}.html`,
+        };
 
         /**
          * Defines the options from the optional json file located within current
@@ -160,7 +160,7 @@ module.exports = {
 
     if (fs.existsSync(jsonPath) && fs.statSync(jsonPath).size) {
       try {
-        const file = fs.readFileSync(jsonPath, 'utf8');
+        const file = fs.readFileSync(jsonPath, "utf8");
 
         options = JSON.parse(file);
       } catch (error) {
@@ -171,5 +171,5 @@ module.exports = {
     }
 
     return options;
-  }
+  },
 };

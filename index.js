@@ -1,9 +1,8 @@
-const webpack = require("webpack");
-const WebpackDevServer = require("webpack-dev-server");
-const webpackConfig = require("./bin/webpack-config").init();
+const webpack = require('webpack');
+const WebpackDevServer = require('webpack-dev-server');
+const webpackConfig = require('./bin/webpack-config').init();
 
 const app = () => {
-
   if (webpackConfig.devServer) {
     const compiler = webpack(webpackConfig);
     const { devServer } = webpackConfig;
@@ -12,15 +11,14 @@ const app = () => {
     server.listen(devServer.port, devServer.host, () => {
       console.log(`Project running at ${devServer.host}:${devServer.port}`);
     });
-  }
-  else {
-    webpack(webpackConfig, () => {
-      if (err, stats.hasErrors()) {
+  } else {
+    webpack(webpackConfig, (err, stats) => {
+      if (err || stats.hasErrors()) {
         throw new Error(err);
       }
 
       console.log('Done');
-    })
+    });
   }
 };
 
