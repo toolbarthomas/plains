@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const env = require('dotenv');
+const _ = require('lodash');
 
 const message = require('./message');
 
@@ -10,22 +11,12 @@ const message = require('./message');
  */
 module.exports = {
   init() {
+    // Only set the environment configuration once.
     if (this.verifyConfig()) {
       return process.PLAINS || {};
     }
 
-    const envPath = `${process.cwd()}/.env`;
-
-    // Check if the environment has been created, create one otherwise.
-    if (!fs.existsSync(envPath)) {
-      fs.writeFileSync(envPath, '', 'utf8');
-
-      message.warning(
-        `No environment ('.env') file has been defined. A fresh new copy has been created in: ${process.cwd()}`
-      );
-    }
-
-    // Default configuration for Plains
+    // Define the default configuration for Plains
     const defaults = {
       PLAINS_ENVIRONMENT: 'production',
       PLAINS_SRC: path.resolve(process.cwd(), './src'),
@@ -33,6 +24,22 @@ module.exports = {
       PLAINS_HOSTNAME: '127.0.0.1',
       PLAINS_PORT: 8080,
     };
+
+    const envPath = `${process.cwd()}/.env`;
+
+    /**
+     * Check if an environment file exists or create one otherwise.
+     * Insert the default configuration example within the new environment file.
+     */
+    if (!fs.existsSync(envPath)) {
+      const defaultData = _.map(defaults, (value, key) => `# ${key}=${value}`).join('\n');
+
+      fs.writeFileSync(envPath, defaultData, 'utf8');
+
+      message.warning(
+        `No environment ('.env') file has been defined. A fresh new copy has been created in: ${process.cwd()}`
+      );
+    }
 
     // Load the environment file defined within the current working directory.
     env.config({
