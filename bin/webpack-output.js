@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const message = require('./message');
+const config = require('./environment-config').init();
 
 /**
  * Callback function for the Webpack compiler that outputs any errors or warnings and write
@@ -12,13 +13,13 @@ const message = require('./message');
  */
 const webpackOutput = (err, stats, webpackConfig) => {
   if (err) {
-    message.error(err.stack || err);
+    const errors = [err.stack || err];
 
     if (err.details) {
-      message.error(err.details);
+      errors.push(err.details);
     }
 
-    return;
+    message.error(errors);
   }
 
   // Define the options to use when displaying the Webpack stats.

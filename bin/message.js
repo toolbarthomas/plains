@@ -8,8 +8,7 @@ module.exports = {
    * @param {String} message Message to ouput.
    */
   error(message) {
-    // eslint-disable-next-line no-console
-    console.error(symbols.error, chalk.red(message));
+    this.outputMessages(chalk.red(message), 'error', 'error');
 
     process.exit(1);
   },
@@ -20,8 +19,7 @@ module.exports = {
    * @param {String} message Message to ouput.
    */
   warning(message) {
-    // eslint-disable-next-line no-console
-    console.warn(symbols.warning, chalk.yellow(message));
+    this.outputMessages(chalk.yellow(message), 'warn', 'warning');
   },
 
   /**
@@ -30,8 +28,7 @@ module.exports = {
    * @param {String} message Message to ouput.
    */
   success(message) {
-    // eslint-disable-next-line no-console
-    console.log(symbols.success, chalk.green(message));
+    this.outputMessages(chalk.green(message), 'log', 'success');
   },
 
   /**
@@ -40,7 +37,26 @@ module.exports = {
    * @param {String} message Message to ouput.
    */
   info(message) {
-    // eslint-disable-next-line no-console
-    console.info(symbols.info, chalk.blue(message));
+    this.outputMessages(chalk.blue(message), 'info', 'info');
   },
+
+  /**
+   * Check if the defined message has been split up in multiple lines.
+   * Ouput a new console method for each message entry.
+   *
+   * @param {String|Array} message The actual message to output
+   * @param {String} method Defines the method to use for the console Object.
+   * @param {String} symbold Defines the symbol type to use for the loggin symbol.
+   */
+  outputMessages(message, method, symbol) {
+    if (message.constructor === Array && message instanceof Array) {
+      message.forEach(m => {
+        // eslint-disable-next-line no-console
+        console[method](symbols[symbol], m);
+      });
+    } else {
+      // eslint-disable-next-line no-console
+      console[method](symbols[symbol], message);
+    }
+  }
 };
