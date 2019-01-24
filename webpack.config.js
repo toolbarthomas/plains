@@ -1,4 +1,4 @@
 module.exports = {
-  mode: "none",
-  stats: "minimal",
+  mode: 'none',
+  stats: 'minimal',
 };

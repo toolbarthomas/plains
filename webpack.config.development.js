@@ -1,13 +1,13 @@
-const path = require("path");
-const VueLoaderPlugin = require("vue-loader/lib/plugin");
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
-const config = require("./bin/config").init();
+const config = require('./bin/environment-config').init();
 
 module.exports = {
-  mode: "development",
+  mode: 'development',
+  stats: 'errors-only',
   output: {
     path: config.PLAINS_DIST,
-    publicPath: "/",
+    publicPath: '/',
   },
   devServer: {
     compress: false,
@@ -15,7 +15,7 @@ module.exports = {
     inline: true,
     host: config.PLAINS_HOSTNAME,
     open: true,
-    publicPath: "/",
+    publicPath: '/',
     port: config.PLAINS_PORT,
   },
   plugins: [new VueLoaderPlugin()],
@@ -23,15 +23,15 @@ module.exports = {
     rules: [
       {
         test: /\.vue$/,
-        use: "vue-loader",
+        use: 'vue-loader',
       },
       {
         test: /\.js$/,
-        use: "babel-loader",
+        use: 'babel-loader',
       },
       {
         test: /\.css$/,
-        use: ["vue-style-loader", "css-loader"],
+        use: ['vue-style-loader', 'css-loader'],
       },
     ],
   },
