@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node ./index.js",
-    "build": "webpack"
+    "serve": "node ./index.js serve"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/toolbarthomas/plains#readme",
   "dependencies": {
+    "domready": "^1.0.8",
     "vue": "^2.5.22",
     "vue-router": "^3.0.2"
   },
@@ -46,6 +47,7 @@
     "html-webpack-plugin": "^3.2.0",
     "lodash": "^4.17.11",
     "log-symbols": "^2.2.0",
+    "mini-css-extract-plugin": "^0.5.0",
     "path": "^0.12.7",
     "prettier": "^1.15.3",
     "style-loader": "^0.23.1",
