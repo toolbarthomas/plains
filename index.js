@@ -1,6 +1,7 @@
 const Webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 
+const config = require('./bin/environment-config').init();
 const webpackConfig = require('./bin/webpack-config').init();
 const webpackOutput = require('./bin/webpack-output');
 const message = require('./bin/message');

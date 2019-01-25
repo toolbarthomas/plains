@@ -54,6 +54,9 @@ module.exports = {
     // Define the configuration object before returning it.
     const config = defaults || {};
 
+    // Define any additional arguments from Node within the configuration.
+    config.argv = this.defineArgs();
+
     // Check if the process.env is actually set.
     if (!process.env) {
       return config;
@@ -108,5 +111,43 @@ module.exports = {
     }
 
     return process.PLAINS instanceof Object && process.PLAINS.constructor === Object;
+  },
+
+  /**
+   * Define the aditional arguments from the given Node command within the global configuration.
+   * Use the actual argument value if the given Node command has a value defined with
+   * the equals sign.
+   *
+   * @return {Object} Returns an Object with the defined Node arguments and it's value.
+   */
+  defineArgs() {
+    const args = {};
+
+    if (process.argv.length >= 3) {
+      process.argv.slice(2).forEach(arg => {
+        // Check if the Node argument has a specific value.
+        if (arg.indexOf('=') >= 0) {
+          const value = String(arg.substring(arg.indexOf('=') + 1));
+          const key = String(arg.split('=')[0]);
+
+          // Convert values with true or false to an actual Boolean.
+          switch (value.toLowerCase()) {
+            case 'true':
+              args[key] = true;
+              break;
+            case 'false':
+              args[key] = false;
+              break;
+            default:
+              args[key] = value;
+              break;
+          }
+        } else {
+          args[arg] = true;
+        }
+      });
+    }
+
+    return args;
   },
 };
