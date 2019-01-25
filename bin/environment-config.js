@@ -91,11 +91,9 @@ module.exports = {
      */
     process.PLAINS = config;
 
-    // Notify the user that the environment configration is loaded
-    message.info([
-      'Environment configuration has been loaded',
-      `Plains will use the environment configuration for ${config.PLAINS_ENVIRONMENT.toUpperCase()}.`,
-    ]);
+    // Loading the environment configuration.
+    message.info(`Using environment configuration for ${config.PLAINS_ENVIRONMENT}...`)
+
 
     return config || {};
   },

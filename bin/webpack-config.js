@@ -19,30 +19,29 @@ module.exports = {
    * is set to `development`.
    */
   init() {
-    const webpackConfigPath = path.resolve(process.cwd(), 'webpack.config.js');
-    let webpackConfig = {};
+    const defaultConfigPath = path.resolve(process.cwd(), 'webpack.config.js');
+    let webpackBaseConfig = {};
 
-    // Use the defined default configuration of Webpack as base configuration.
-    if (fs.existsSync(webpackConfigPath)) {
+    // Use the default configuration for Webpack.
+    if (fs.existsSync(defaultConfigPath)) {
       // eslint-disable-next-line
-      webpackConfig = require(webpackConfigPath);
+      webpackBaseConfig = require(defaultConfigPath);
     }
 
-    // Define all configuration for the defined Plains environment.
-    const environmentConfig = this.getEnvironmentConfig();
+    // Load the additional environment configuration for Webpack.
+    const webpackEnvironmentConfig = this.getWebpackEnvironmentConfig();
 
     // Define the configuration for each entry file defined within the `templates` directory.
-    const entryConfig = this.getEntryConfig();
+    const webpackEntryConfig = this.getEntryConfig(webpackEnvironmentConfig);
 
     // Return the merged Webpack configuration.
-    return webpackMerge(webpackConfig, environmentConfig, entryConfig);
+    return webpackMerge(webpackBaseConfig, webpackEnvironmentConfig, webpackEntryConfig);
   },
 
   /**
-   * Use the Webpack configuration file if `PLAINS_ENVIRONMENT` constant is defined.
-   * Webpack will try to load: `webpack.config.${PLAINS_ENVIRONMENT}.js if it exists.
+   * Try to include the environment specific configuration for Webpack.
    */
-  getEnvironmentConfig() {
+  getWebpackEnvironmentConfig() {
     const environmentConfigPath = path.resolve(
       process.cwd(),
       `webpack.config.${config.PLAINS_ENVIRONMENT}.js`
@@ -50,17 +49,11 @@ module.exports = {
 
     // Check if the webpack configuration exists for the defined PLAINS_ENVIRONMENT.
     if (!fs.existsSync(environmentConfigPath)) {
-      message.warning(
-        `The webpack configuration file for "${config.PLAINS_ENVIRONMENT}" could not been found.`
-      );
-
-      message.warning(
-        `Webpack will ignore the specific configuration for "${config.PLAINS_ENVIRONMENT}".`
-      );
-
-      message.warning(
-        `Be sure to create a Webpack configuration specific for "${config.PLAINS_ENVIRONMENT}".`
-      );
+      message.warning([
+        `The webpack configuration file for "${config.PLAINS_ENVIRONMENT}" could not been found.`,
+        `Webpack will ignore the specific configuration for "${config.PLAINS_ENVIRONMENT}".`,
+        `Be sure to create a Webpack configuration specific for "${config.PLAINS_ENVIRONMENT}".`,
+      ]);
 
       return {};
     }
@@ -73,14 +66,10 @@ module.exports = {
      * Ouput a warning if the configuration file is invalid.
      */
     if (!(environmentConfig instanceof Object) || environmentConfig.constructor !== Object) {
-      message.warning(
-        `The defined configuration for "${config.PLAINS_ENVIRONMENT}"
-        is not a valid configuration object for Webpack.`
-      );
-
-      message.warning(
-        `Webpack will ignore the specific configuration for "${config.PLAINS_ENVIRONMENT}".`
-      );
+      message.warning([
+        `The defined Webpack configuration for ${config.PLAINS_ENVIRONMENT} is invalid.`,
+        'This configuration will be ignored.'
+      ]);
 
       return {};
     }
@@ -92,7 +81,7 @@ module.exports = {
    * Define one or more entry files for Webpack, each entry file is defined as
    * a subdirectory within the `templates` directory in the `PLAINS_SRC` directory.
    */
-  getEntryConfig() {
+  getEntryConfig(webpackEnvironmentConfig) {
     const entries = glob.sync(`${config.PLAINS_SRC}/templates/*/index.js`);
 
     const templateConfig = {
@@ -134,11 +123,8 @@ module.exports = {
         // Queue the current entry file
         templateConfig.entry[name] = [entry];
 
-        // Include the HMR middleware specificly for development environments.
-        if (
-          config.PLAINS_ENVIRONMENT === 'development' &&
-          this.getEnvironmentConfig().devServer instanceof Object
-        ) {
+        // Include the HMR middleware if the Plains is running under the devServer.
+        if (webpackEnvironmentConfig.devServer instanceof Object && config.argv.serve) {
           templateConfig.entry[name].unshift(
             `webpack-dev-server/client?${config.PLAINS_SERVER_ADDRESS}`
           );

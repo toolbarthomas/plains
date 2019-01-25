@@ -2,14 +2,15 @@ const Webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 
 const config = require('./bin/environment-config').init();
+const message = require('./bin/message');
+
 const webpackConfig = require('./bin/webpack-config').init();
 const webpackOutput = require('./bin/webpack-output');
-const message = require('./bin/message');
 
 const app = () => {
   message.info('Starting Webpack...');
 
-  if (webpackConfig.devServer) {
+  if (webpackConfig.devServer && config.argv.serve) {
     const compiler = Webpack(webpackConfig);
 
     const { devServer } = webpackConfig;

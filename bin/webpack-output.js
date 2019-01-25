@@ -40,7 +40,7 @@ const webpackOutput = (err, stats, webpackConfig) => {
   }
 
   // Outputs the initial log within the console.
-  if (config.argv.silent !== true && outputOptions !== 'none' && output.raw.length > 0) {
+  if (config.argv.verbose) {
     // eslint-disable-next-line
     console.log(output.info);
   }
@@ -48,7 +48,7 @@ const webpackOutput = (err, stats, webpackConfig) => {
   const file = path.resolve(process.cwd(), `.webpack.stats.${config.PLAINS_ENVIRONMENT}.json`);
 
   // Writes the generated log within the current working directory.
-  if (output.raw.length > 0) {
+  if (output.raw.length > 0 && config.argv.log !== false) {
     message.info('Writing Webpack log to the filesystem...');
 
     fs.writeFileSync(file, JSON.stringify(output.raw, null, 2));
@@ -56,7 +56,7 @@ const webpackOutput = (err, stats, webpackConfig) => {
     message.success(`Log successfully created at: ${file}`);
   }
 
-  message.success('Created Webpack build successfully!');
+  message.success('Done!');
 };
 
 module.exports = webpackOutput;
