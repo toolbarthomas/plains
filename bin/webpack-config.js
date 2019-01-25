@@ -68,7 +68,7 @@ module.exports = {
     if (!(environmentConfig instanceof Object) || environmentConfig.constructor !== Object) {
       message.warning([
         `The defined Webpack configuration for ${config.PLAINS_ENVIRONMENT} is invalid.`,
-        'This configuration will be ignored.'
+        'This configuration will be ignored.',
       ]);
 
       return {};
@@ -80,6 +80,8 @@ module.exports = {
   /**
    * Define one or more entry files for Webpack, each entry file is defined as
    * a subdirectory within the `templates` directory in the `PLAINS_SRC` directory.
+   *
+   * @param {Object} webpackEnvironmentConfig Defines the Webpack configuration for the given environment.
    */
   getEntryConfig(webpackEnvironmentConfig) {
     const entries = glob.sync(`${config.PLAINS_SRC}/templates/*/index.js`);

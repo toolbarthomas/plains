@@ -92,8 +92,7 @@ module.exports = {
     process.PLAINS = config;
 
     // Loading the environment configuration.
-    message.info(`Using environment configuration for ${config.PLAINS_ENVIRONMENT}...`)
-
+    message.info(`Using environment configuration for ${config.PLAINS_ENVIRONMENT}...`);
 
     return config || {};
   },
