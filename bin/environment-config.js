@@ -29,7 +29,7 @@ module.exports = {
 
     /**
      * Check if an environment file exists or create one otherwise.
-     * Insert the default configuration example within the new environment file.
+     * Insert the default environment configuration values within the new file.
      */
     if (!fs.existsSync(envPath)) {
       const defaultData = _.map(defaults, (value, key) => `# ${key}=${value}`).join('\n');
@@ -48,7 +48,7 @@ module.exports = {
 
     // Validate the parsed environment file throw an exception if any errors.
     if (env.error) {
-      throw env.error;
+      message.error(env.error);
     }
 
     // Define the configuration object before returning it.
@@ -72,21 +72,27 @@ module.exports = {
     );
 
     // Defines the hostname for the development server.
-    config.PLAINS_HOSTNAME = (process.env.PLAINS_HOSTNAME || '127.0.0.1').replace(
-      /(^\w+:|^)\/\//,
-      ''
-    );
+    const hostname = process.env.PLAINS_HOSTNAME || defaults.PLAINS_HOSTNAME;
+
+    // Ensure the protocol & port number is removed.
+    config.PLAINS_HOSTNAME = hostname.replace(/(^\w+:|^)\/\//, '');
 
     // Define the default port for the development server.
-    config.PLAINS_PORT = process.env.PLAINS_PORT || 8080;
+    config.PLAINS_PORT = process.env.PLAINS_PORT || defaults.PLAINS_PORT;
 
     config.PLAINS_SERVER_ADDRESS = `http://${config.PLAINS_HOSTNAME}:${config.PLAINS_PORT}`;
 
-    // Mark Plains as enabled since the configuration has been defined.
+    /**
+     * Make the Plains configuration global.
+     * This also ensures that the configuration is only defined once.
+     */
     process.PLAINS = config;
 
     // Notify the user that the environment configration is loaded
-    message.success(`Environment configuration loaded from: ${envPath}`);
+    message.info([
+      'Environment configuration has been loaded',
+      `Plains will use the environment configuration for ${config.PLAINS_ENVIRONMENT.toUpperCase()}.`,
+    ]);
 
     return config || {};
   },

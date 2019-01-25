@@ -134,7 +134,7 @@ module.exports = {
         // Queue the current entry file
         templateConfig.entry[name] = [entry];
 
-        // Include HMR middleware for development environments.
+        // Include the HMR middleware specificly for development environments.
         if (
           config.PLAINS_ENVIRONMENT === 'development' &&
           this.getEnvironmentConfig().devServer instanceof Object

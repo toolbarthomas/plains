@@ -5,10 +5,10 @@ module.exports = {
   /**
    * Prints out an error message & exit the current process.
    *
-   * @param {String} message Message to ouput.
+   * @param {String|Array} message The message to display.
    */
   error(message) {
-    this.outputMessages(chalk.red(message), 'error', 'error');
+    this.outputMessages(message, 'error', 'error');
 
     process.exit(1);
   },
@@ -16,28 +16,28 @@ module.exports = {
   /**
    * Prints out a warning message.
    *
-   * @param {String} message Message to ouput.
+   * @param {String|Array} message The message to display.
    */
   warning(message) {
-    this.outputMessages(chalk.yellow(message), 'warn', 'warning');
+    this.outputMessages(message, 'warn', 'warning');
   },
 
   /**
    * Prints out an success message.
    *
-   * @param {String} message Message to ouput.
+   * @param {String|Array} message The message to display.
    */
   success(message) {
-    this.outputMessages(chalk.green(message), 'log', 'success');
+    this.outputMessages(message, 'log', 'success');
   },
 
   /**
    * Prints out an info message.
    *
-   * @param {String} message Message to ouput.
+   * @param {String|Array} message The message to display.
    */
   info(message) {
-    this.outputMessages(chalk.blue(message), 'info', 'info');
+    this.outputMessages(message, 'info', 'info');
   },
 
   /**
@@ -46,17 +46,57 @@ module.exports = {
    *
    * @param {String|Array} message The actual message to output
    * @param {String} method Defines the method to use for the console Object.
-   * @param {String} symbold Defines the symbol type to use for the loggin symbol.
    */
-  outputMessages(message, method, symbol) {
+  outputMessages(message, method) {
+    const styles = this.getMethodStyles(method);
+
+    if (!styles) {
+      return;
+    }
+
     if (message.constructor === Array && message instanceof Array) {
       message.forEach(m => {
         // eslint-disable-next-line no-console
-        console[method](symbols[symbol], m);
+        console[method](chalk[styles.color](symbols[styles.symbol], m));
       });
     } else {
       // eslint-disable-next-line no-console
-      console[method](symbols[symbol], message);
+      console[method](chalk[styles.color](symbols[styles.symbol], message));
     }
+  },
+
+  /**
+   * Helper function for returning the correct styles from the defined method.
+   *
+   * @param {String} method The method to compare.
+   *
+   * @return {Object} The styles object to return.
+   */
+  getMethodStyles(method) {
+    const styles = {
+      color: '',
+      symbol: '',
+    };
+
+    switch (method) {
+      case "error":
+        styles.color = 'red';
+        styles.symbol = 'error';
+        break;
+      case "warn":
+        styles.color = 'yellow';
+        styles.symbol = 'warning';
+        break;
+      case "log":
+        styles.color = 'green';
+        styles.symbol = 'success';
+        break;
+      default:
+        styles.color = 'blue';
+        styles.symbol = 'info';
+        break;
+    }
+
+    return styles;
   }
 };
