@@ -4,7 +4,6 @@ const config = require('./bin/environment-config').init();
 
 module.exports = {
   mode: 'development',
-  stats: true,
   output: {
     path: config.PLAINS_DIST,
     publicPath: '/',
@@ -12,11 +11,14 @@ module.exports = {
   devServer: {
     compress: false,
     contentBase: config.PLAINS_DIST,
-    inline: true,
     host: config.PLAINS_HOSTNAME,
+    inline: true,
     open: true,
-    publicPath: '/',
     port: config.PLAINS_PORT,
+    publicPath: '/',
+    stats: {
+      colors: true,
+    },
   },
   plugins: [new VueLoaderPlugin()],
   module: {

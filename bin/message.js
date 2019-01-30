@@ -79,15 +79,15 @@ module.exports = {
     };
 
     switch (method) {
-      case "error":
+      case 'error':
         styles.color = 'red';
         styles.symbol = 'error';
         break;
-      case "warn":
+      case 'warn':
         styles.color = 'yellow';
         styles.symbol = 'warning';
         break;
-      case "log":
+      case 'log':
         styles.color = 'green';
         styles.symbol = 'success';
         break;
