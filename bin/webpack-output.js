@@ -50,7 +50,7 @@ const webpackOutput = (err, stats, webpackConfig) => {
 
     fs.writeFileSync(file, JSON.stringify(info, null, 2));
 
-    message.success(`Log successfully created at: ${file}`);
+    message.success(`Log created at: ${file}`);
   }
 
   message.success('Done!');
