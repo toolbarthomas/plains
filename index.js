@@ -23,7 +23,7 @@ const app = () => {
     const server = new WebpackDevServer(compiler, devServer);
 
     server.listen(devServer.port, devServer.host, () => {
-      message.info(`App running and server from: ${devServer.host}:${devServer.port}`);
+      message.info(`Server started: ${devServer.host}:${devServer.port}`);
     });
   } else {
     Webpack(webpackConfig, (err, stats) => {

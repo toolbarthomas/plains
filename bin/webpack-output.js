@@ -23,35 +23,32 @@ const webpackOutput = (err, stats, webpackConfig) => {
   }
 
   // Define the options to use when displaying the Webpack stats.
-  const outputOptions = webpackConfig.stats || 'minimal';
+  const outputOptions = webpackConfig.stats || true;
 
   // Define the log as json Object to save it to the filesystem.
-  const output = {
-    info: stats.toJson(outputOptions),
-    raw: stats.toString(outputOptions),
-  };
+  const info = stats.toJson(outputOptions);
 
   if (stats.hasErrors()) {
-    message.error(output.info.errors);
+    message.error(info.errors);
   }
 
   if (stats.hasWarnings()) {
-    message.warning(output.info.warnings);
+    message.warning(info.warnings);
   }
 
   // Outputs the initial log within the console.
   if (config.argv.verbose) {
     // eslint-disable-next-line
-    console.log(output.info);
+    console.log(info);
   }
 
   const file = path.resolve(process.cwd(), `.webpack.stats.${config.PLAINS_ENVIRONMENT}.json`);
 
   // Writes the generated log within the current working directory.
-  if (output.raw.length > 0 && config.argv.log !== false) {
+  if (info instanceof Object && Object.keys(info).length > 0 && config.argv.log !== false) {
     message.info('Writing Webpack log to the filesystem...');
 
-    fs.writeFileSync(file, JSON.stringify(output.raw, null, 2));
+    fs.writeFileSync(file, JSON.stringify(info, null, 2));
 
     message.success(`Log successfully created at: ${file}`);
   }

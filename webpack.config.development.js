@@ -4,7 +4,7 @@ const config = require('./bin/environment-config').init();
 
 module.exports = {
   mode: 'development',
-  stats: 'errors-only',
+  stats: true,
   output: {
     path: config.PLAINS_DIST,
     publicPath: '/',

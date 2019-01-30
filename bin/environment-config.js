@@ -16,15 +16,48 @@ module.exports = {
       return process.PLAINS || {};
     }
 
+    // Define the default Command Line interface arguments
+    const cliArgs = {
+      /**
+       * Starts a devServer after the inital build.
+       */
+      serve: false,
+      /**
+       * Saves the Webpack log within the current working directory for the
+       * defined environment
+       */
+      log: false,
+    };
+
     // Define the default configuration for Plains
     const defaults = {
+      /**
+       * Use the Webpack configuration for the defined environment if it exist.
+       */
       PLAINS_ENVIRONMENT: 'production',
+
+      /**
+       * Defines the source directory.
+       */
       PLAINS_SRC: path.resolve(process.cwd(), './src'),
+
+      /**
+       * Defines build the directory.
+       */
       PLAINS_DIST: path.resolve(process.cwd(), './dist'),
+
+      /**
+       * Defines the hostname to run the devServer from.
+       */
       PLAINS_HOSTNAME: '127.0.0.1',
+
+      /**
+       * Defines the port to use for the devServer.
+       */
       PLAINS_PORT: 8080,
     };
 
+    // Defines the path to the optional dotenv configuration file.
     const envPath = `${process.cwd()}/.env`;
 
     /**
@@ -55,7 +88,7 @@ module.exports = {
     const config = defaults || {};
 
     // Define any additional arguments from Node within the configuration.
-    config.argv = this.defineArgs();
+    config.argv = this.defineArgs(cliArgs);
 
     // Check if the process.env is actually set.
     if (!process.env) {
@@ -117,7 +150,7 @@ module.exports = {
    *
    * @return {Object} Returns an Object with the defined Node arguments and it's value.
    */
-  defineArgs() {
+  defineArgs(cliArgs) {
     const args = {};
 
     if (process.argv.length >= 3) {
@@ -145,6 +178,6 @@ module.exports = {
       });
     }
 
-    return args;
+    return Object.assign(cliArgs, args);
   },
 };
