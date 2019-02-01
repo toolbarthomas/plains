@@ -1,5 +1,5 @@
 module.exports = {
   init() {
     return {};
-  }
-}
+  },
+};

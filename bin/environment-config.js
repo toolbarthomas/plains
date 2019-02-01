@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const env = require('dotenv');
 
+const logger = require('./logger');
+
 module.exports = {
   /**
    * Define the configuration based for the working environment.
@@ -65,7 +67,9 @@ module.exports = {
      * the default configuration values from `production`.
      */
     if (!fs.existsSync(dotenvPath)) {
-      console.log(`The optional environment file is not defined, the default configuration will be used.`);
+      logger.warning(
+        'The optional environment file is not defined, the default configuration will be used.'
+      );
 
       config = defaults;
     }
@@ -85,7 +89,7 @@ module.exports = {
      */
     _.forEach(defaults, (value, key) => {
       if (!process.env[key]) {
-        console.log(`Using default configuration value for ${key}`);
+        logger.info(`Using default configuration value for ${key}`);
 
         process.env[key] = value;
       }
@@ -93,7 +97,7 @@ module.exports = {
       config[key] = process.env[key];
     });
 
-    console.log(`Environment configuration set, running under ${process.env.PLAINS_ENVIRONMENT}.`);
+    logger.info(`Environment configuration set, running under ${process.env.PLAINS_ENVIRONMENT}.`);
 
     return config;
   },
@@ -114,5 +118,5 @@ module.exports = {
     };
 
     return defaults;
-  }
-}
+  },
+};
