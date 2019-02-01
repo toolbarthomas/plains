@@ -89,12 +89,19 @@ module.exports = {
      */
     _.forEach(defaults, (value, key) => {
       if (!process.env[key]) {
-        logger.info(`Using default configuration value for ${key}`);
+        logger.warning(`Using default configuration value for ${key}`);
 
         process.env[key] = value;
       }
 
       config[key] = process.env[key];
+    });
+
+    // Make sure the source & destination paths are absolute
+    const absolutePaths = ['PLAINS_SRC', 'PLAINS_DIST'];
+
+    absolutePaths.forEach(currentPath => {
+      config[currentPath] = path.resolve(process.cwd(), config[currentPath]);
     });
 
     logger.info(`Environment configuration set, running under ${process.env.PLAINS_ENVIRONMENT}.`);
@@ -110,7 +117,7 @@ module.exports = {
   getDefaults() {
     const defaults = {
       PLAINS_ENVIRONMENT: 'production',
-      PLAINS_SRC: path.resolve(process.cwd(), './src'),
+      PLAINS_SRC: './src',
       PLAINS_DIST: './dist',
       PLAINS_PACKAGE_PATH: './node_modules',
       PLAINS_HOSTNAME: '127.0.0.1',

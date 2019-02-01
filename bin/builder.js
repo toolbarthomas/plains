@@ -2,16 +2,15 @@ const Webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 
 const logger = require('./logger');
-const webpackConfig = require('./webpack-config').init();
+const webpackConfig = require('./webpack-config');
 
 module.exports = PLAINS => {
-  if (PLAINS.args.serve) {
-    const compiler = Webpack(webpackConfig);
+  const options = webpackConfig.init(PLAINS);
 
-    const devServer = {
-      host: PLAINS.config.PLAINS_HOSTNAME,
-      port: PLAINS.config.PLAINS_PORT,
-    };
+  if (PLAINS.args.serve) {
+    const compiler = Webpack(options);
+
+    const { devServer } = webpackConfig;
 
     const server = new WebpackDevServer(compiler, devServer);
 
@@ -19,6 +18,8 @@ module.exports = PLAINS => {
       logger.info(`Server started at: ${devServer.host}:${devServer.port}`);
     });
   } else {
-    Webpack(webpackConfig);
+    Webpack(options, (err, stats) => {
+      logger.success('Done!');
+    });
   }
 };
