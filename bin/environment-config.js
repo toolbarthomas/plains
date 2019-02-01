@@ -8,6 +8,8 @@ module.exports = {
    * Define the configuration based for the working environment.
    * Plains will use the `production` environment configuration as fallback, if
    * the actual configuration is missing from the working environment.
+   *
+   * @return {Object} The defined environment configuration.
    */
   init() {
     let config = {};
@@ -27,19 +29,21 @@ module.exports = {
    * @return {Boolean} Returns true if the configuration for Plains exists.
    */
   hasConfig() {
-    if (!('PLAINS' in process)) {
+    if (!('PLAINS' in process) || !('config' in process.PLAINS)) {
       return false;
     }
 
-    return process.PLAINS instanceof Object && process.PLAINS.constructor === Object;
+    return process.PLAINS.config instanceof Object && process.PLAINS.config.constructor === Object;
   },
 
   /**
    * Get the globally defined Plains configuration that has been set for the
    * running application.
+   *
+   * @return {Object} Returns the defined configuration if already set.
    */
   getConfig() {
-    return process.PLAINS;
+    return process.PLAINS.config;
   },
 
   /**
@@ -49,9 +53,6 @@ module.exports = {
    * @return {Object} Return the defined environment configuration.
    */
   setConfig() {
-    // Prepare the PLAINS configuratiom Object.
-    process.PLAINS = {};
-
     let config = {};
 
     const dotenvPath = path.resolve(process.cwd(), '.env');
@@ -84,10 +85,9 @@ module.exports = {
      */
     _.forEach(defaults, (value, key) => {
       if (!process.env[key]) {
-        console.log(`Using default configuration value for ${key}.`);
+        console.log(`Using default configuration value for ${key}`);
 
         process.env[key] = value;
-        process.PLAINS[key] = value;
       }
 
       config[key] = process.env[key];
@@ -106,7 +106,7 @@ module.exports = {
   getDefaults() {
     const defaults = {
       PLAINS_ENVIRONMENT: 'production',
-      PLAINS_SRC: './src',
+      PLAINS_SRC: path.resolve(process.cwd(), './src'),
       PLAINS_DIST: './dist',
       PLAINS_PACKAGE_PATH: './node_modules',
       PLAINS_HOSTNAME: '127.0.0.1',
