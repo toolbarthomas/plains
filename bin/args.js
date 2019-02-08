@@ -1,6 +1,5 @@
 module.exports = {
   init() {
-    //
     const defaults = this.getDefaults();
 
     // Prepare the arguments Object to return.

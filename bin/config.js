@@ -73,7 +73,7 @@ module.exports = {
          * Defines the options from the optional json file located within current
          * template directory.
          */
-        const options = Object.assign(defaults, this.getTemplateOptions(jsonPath));
+        const options = Object.assign(defaults, this.getTemplateData(jsonPath));
 
         // Create a new HtmlWebpack plugin to create a html file.
         const page = new HtmlWebpackPlugin(options);
@@ -98,11 +98,11 @@ module.exports = {
   },
 
   /**
-   * Hook
+   * Define the aditional data the current template.
    *
    * @param {String} jsonPath The path to the defined json file from the given entry.
    */
-  getTemplateOptions(jsonPath) {
+  getTemplateData(jsonPath) {
     let options = {};
 
     if (fs.existsSync(jsonPath) && fs.statSync(jsonPath).size) {
