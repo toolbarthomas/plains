@@ -1,15 +1,27 @@
-const args = require('./bin/args');
-const environmentConfig = require('./bin/environment-config');
-const builder = require('./bin/builder');
+const Webpack = require('webpack');
+const WebpackDevServer = require('webpack-dev-server');
+const logger = require('./bin/logger');
 
-// Create the Plains Object
-const PLAINS = {
-  args: args.init(),
-  config: environmentConfig.init(),
-};
+const args = require('./bin/args').init();
+const env = require('./bin/env').init();
+const config = require('./bin/config').init(args, env);
 
-// Export the actual Plains configration within the.
-process.PLAINS = PLAINS;
+// Start Plains
+if (args.serve) {
+  const compiler = Webpack(config);
+  const { devServer } = config;
 
-// Start Plains.
-builder(PLAINS);
+  const server = new WebpackDevServer(compiler, devServer);
+
+  server.listen(devServer.port, devServer.host, () => {
+    logger.info(`Server started at: ${devServer.host}:${devServer.port}`);
+  });
+} else {
+  Webpack(config, err => {
+    if (err) {
+      logger.error(err);
+    } else {
+      logger.success('Done!');
+    }
+  });
+}

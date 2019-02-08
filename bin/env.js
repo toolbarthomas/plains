@@ -59,12 +59,12 @@ module.exports = {
 
     const dotenvPath = path.resolve(process.cwd(), '.env');
 
-    // Use the default configuration if it doesn't exist.
+    // Define the default configuration if it doesn't exist.
     const defaults = this.getDefaults();
 
     /**
-     * Create the environment file if the dotenev file doesn't exists and use
-     * the default configuration values from `production`.
+     * Use the default environment configuration form `production` if the dotenev
+     * file doesn't exists.
      */
     if (!fs.existsSync(dotenvPath)) {
       logger.warning(
@@ -98,7 +98,7 @@ module.exports = {
     });
 
     // Make sure the source & destination paths are absolute
-    const absolutePaths = ['PLAINS_SRC', 'PLAINS_DIST'];
+    const absolutePaths = ['PLAINS_SRC', 'PLAINS_DIST', 'PLAINS_PACKAGE_PATH'];
 
     absolutePaths.forEach(currentPath => {
       config[currentPath] = path.resolve(process.cwd(), config[currentPath]);

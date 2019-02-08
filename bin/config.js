@@ -5,31 +5,31 @@ const webpackMerge = require('webpack-merge');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const logger = './logger';
+const logger = require('./logger');
 
 module.exports = {
-  init(PLAINS) {
-    this.PLAINS = PLAINS || {};
+  init(args, env) {
+    this.args = args;
+    this.env = env;
 
-    this.baseConfig = this.getBaseConfig();
-    this.entryConfig = this.getEntryConfig();
+    const config = webpackMerge(this.getBaseConfig(), this.getEntryConfig());
 
-    return webpackMerge(this.baseConfig, this.entryConfig);
+    return config;
   },
 
   /**
-   * Define the base configuration from the optional Webpack configuration file.
+   * Defines the base configuration for Webpack.
    */
   getBaseConfig() {
     const baseConfig = {
-      mode: this.PLAINS.config.PLAINS_ENVIRONMENT,
+      mode: this.env.PLAINS_ENVIRONMENT,
       output: {
-        path: this.PLAINS.config.PLAINS_DIST,
+        path: this.env.PLAINS_DIST,
         publicPath: '/',
       },
       devServer: {
-        host: this.PLAINS.config.PLAINS_HOSTNAME,
-        port: this.PLAINS.config.PLAINS_PORT,
+        host: this.env.PLAINS_HOSTNAME,
+        port: this.env.PLAINS_PORT,
       },
     };
 
@@ -37,12 +37,12 @@ module.exports = {
   },
 
   /**
-   * Define the entry files for Webpack.
+   * Defines the entry configuration for Webpack.
    */
   getEntryConfig() {
-    const entries = glob.sync(`${this.PLAINS.config.PLAINS_SRC}/templates/*/index.js`);
+    const entries = glob.sync(`${this.env.PLAINS_SRC}/templates/*/index.js`);
 
-    const templateConfig = {
+    const entryConfig = {
       entry: {},
       plugins: [],
     };
@@ -60,7 +60,7 @@ module.exports = {
         const extension = path.extname(entry);
 
         // Define the entry key for the current Webpack entry file.
-        const name = entry.replace(`${this.PLAINS.config.PLAINS_SRC}/`, '').replace(extension, '');
+        const name = entry.replace(`${this.env.PLAINS_SRC}/`, '').replace(extension, '');
 
         // Define the path of the optional json file for the current template.
         const jsonPath = entry.replace(extension, '.json');
@@ -79,26 +79,26 @@ module.exports = {
         const page = new HtmlWebpackPlugin(options);
 
         // Queue the current entry file
-        templateConfig.entry[name] = [entry];
+        entryConfig.entry[name] = [entry];
 
         // Include the HMR middleware if the Plains is running under the devServer.
-        if (this.baseConfig.devServer instanceof Object && this.PLAINS.args.serve) {
-          const address = `${this.PLAINS.config.PLAINS_HOSTNAME}:${this.PLAINS.config.PLAINS_PORT}`;
+        if (this.env.PLAINS_ENVIRONMENT === 'development' && this.args.serve) {
+          const address = `${this.env.PLAINS_HOSTNAME}:${this.env.PLAINS_PORT}`;
 
-          templateConfig.entry[name].unshift(`webpack-dev-server/client?//${address}`);
+          entryConfig.entry[name].unshift(`webpack-dev-server/client?//${address}`);
         }
 
         // Queue the current entry file for Webpack.
-        templateConfig.plugins.push(page);
+        entryConfig.plugins.push(page);
       });
     }
 
     // Return all entry files.
-    return templateConfig;
+    return entryConfig;
   },
 
   /**
-   * Define any options that are defined for the current template.
+   * Hook
    *
    * @param {String} jsonPath The path to the defined json file from the given entry.
    */
