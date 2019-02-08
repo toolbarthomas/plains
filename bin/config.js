@@ -2,17 +2,23 @@ const fs = require('fs');
 const glob = require('glob');
 const path = require('path');
 const webpackMerge = require('webpack-merge');
-
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const logger = require('./logger');
+
+const babelLoader = require('./loaders/babel');
+const eslintLoader = require('./loaders/eslint');
 
 module.exports = {
   init(args, env) {
     this.args = args;
     this.env = env;
 
-    const config = webpackMerge(this.getBaseConfig(), this.getEntryConfig());
+    const config = webpackMerge(
+      this.getBaseConfig(),
+      this.getEntryConfig(),
+      this.getLoaderConfig()
+    );
 
     return config;
   },
@@ -116,5 +122,18 @@ module.exports = {
     }
 
     return options;
+  },
+
+  /**
+   * Define the required Loaders.
+   */
+  getLoaderConfig() {
+    const loaderConfig = {
+      module: {
+        rules: [babelLoader, eslintLoader],
+      },
+    };
+
+    return loaderConfig;
   },
 };
