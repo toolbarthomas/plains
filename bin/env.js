@@ -106,6 +106,9 @@ module.exports = {
 
     logger.info(`Environment configuration set, running under ${process.env.PLAINS_ENVIRONMENT}.`);
 
+    // Make the defined environment configuration global available.
+    process.PLAINS = { config };
+
     return config;
   },
 
