@@ -121,7 +121,7 @@ module.exports = {
       PLAINS_DIST: './dist',
       PLAINS_PACKAGE_PATH: './node_modules',
       PLAINS_HOSTNAME: '127.0.0.1',
-      PLAINS_PORT: '8080',
+      PLAINS_PORT: 8080,
     };
 
     return defaults;

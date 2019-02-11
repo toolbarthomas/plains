@@ -36,11 +36,13 @@ module.exports = {
         publicPath: '/',
       },
       devServer: {
-        inline: true,
+        compress: false,
         contentBase: this.env.PLAINS_DIST,
         host: this.env.PLAINS_HOSTNAME,
+        inline: true,
+        open: true,
         port: this.env.PLAINS_PORT,
-        hot: true,
+        publicPath: '/',
       },
     };
 
