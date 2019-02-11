@@ -6,8 +6,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const logger = require('./logger');
 
-const babelLoader = require('./loaders/babel');
-const eslintLoader = require('./loaders/eslint');
+const babelBuilder = require('./builders/babel');
+const eslintBuilder = require('./builders/eslint');
+const vueBuilder = require('./builders/vue');
+const styleBuilder = require('./builders/style');
 
 module.exports = {
   init(args, env) {
@@ -17,7 +19,7 @@ module.exports = {
     const config = webpackMerge(
       this.getBaseConfig(),
       this.getEntryConfig(),
-      this.getLoaderConfig()
+      this.getBuilderConfig()
     );
 
     return config;
@@ -34,8 +36,11 @@ module.exports = {
         publicPath: '/',
       },
       devServer: {
+        inline: true,
+        contentBase: this.env.PLAINS_DIST,
         host: this.env.PLAINS_HOSTNAME,
         port: this.env.PLAINS_PORT,
+        hot: true,
       },
     };
 
@@ -91,7 +96,9 @@ module.exports = {
         if (this.env.PLAINS_ENVIRONMENT === 'development' && this.args.serve) {
           const address = `${this.env.PLAINS_HOSTNAME}:${this.env.PLAINS_PORT}`;
 
-          entryConfig.entry[name].unshift(`webpack-dev-server/client?//${address}`);
+          console.log(address);
+
+          entryConfig.entry[name].unshift(`webpack-dev-server/client?http://${address}`);
         }
 
         // Queue the current entry file for Webpack.
@@ -109,31 +116,27 @@ module.exports = {
    * @param {String} jsonPath The path to the defined json file from the given entry.
    */
   getTemplateData(jsonPath) {
-    let options = {};
+    let data = {};
 
     if (fs.existsSync(jsonPath) && fs.statSync(jsonPath).size) {
       try {
         const file = fs.readFileSync(jsonPath, 'utf8');
 
-        options = JSON.parse(file);
+        data = JSON.parse(file);
       } catch (error) {
         logger.warning(`The optional json file at '${jsonPath}' is not valid and will be ignored.`);
       }
     }
 
-    return options;
+    return data;
   },
 
   /**
-   * Define the required Loaders.
+   * Include the required plugins & loaders for basic Webpack asset preprocessing.
    */
-  getLoaderConfig() {
-    const loaderConfig = {
-      module: {
-        rules: [babelLoader, eslintLoader],
-      },
-    };
+  getBuilderConfig() {
+    const builderConfig = webpackMerge(babelBuilder, eslintBuilder, vueBuilder, styleBuilder);
 
-    return loaderConfig;
+    return builderConfig;
   },
 };
