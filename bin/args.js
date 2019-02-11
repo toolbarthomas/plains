@@ -46,6 +46,7 @@ module.exports = {
     const defaults = {
       serve: false,
       silent: false,
+      verbose: false,
     };
 
     return defaults;

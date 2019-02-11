@@ -2,8 +2,10 @@ const Webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 const logger = require('./bin/logger');
 
+logger.info('Starting Plains');
+
 const args = require('./bin/args').init();
-const env = require('./bin/env').init();
+const env = require('./bin/env').init(args);
 const config = require('./bin/config').init(args, env);
 
 // Start Plains

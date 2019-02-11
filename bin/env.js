@@ -13,8 +13,11 @@ module.exports = {
    *
    * @return {Object} The defined environment configuration.
    */
-  init() {
+  init(args) {
     let config = {};
+
+    // Inherit the optional CLI parameters.
+    this.args = args;
 
     if (this.hasConfig()) {
       config = this.getConfig();
@@ -67,9 +70,11 @@ module.exports = {
      * file doesn't exists.
      */
     if (!fs.existsSync(dotenvPath)) {
-      logger.warning(
-        'The optional environment file is not defined, the default configuration will be used.'
-      );
+      if (this.args.verbose) {
+        logger.warning(
+          'The optional environment file is not defined, the default configuration will be used.'
+        );
+      }
 
       config = defaults;
     }
@@ -89,7 +94,9 @@ module.exports = {
      */
     _.forEach(defaults, (value, key) => {
       if (!process.env[key]) {
-        logger.warning(`Using default configuration value for ${key}`);
+        if (this.args.verbose) {
+          logger.warning(`Using default configuration value for ${key}`);
+        }
 
         process.env[key] = value;
       }
@@ -104,7 +111,7 @@ module.exports = {
       config[currentPath] = path.resolve(process.cwd(), config[currentPath]);
     });
 
-    logger.info(`Environment configuration set, running under ${process.env.PLAINS_ENVIRONMENT}.`);
+    logger.info(`Environment set for ${process.env.PLAINS_ENVIRONMENT}`);
 
     // Make the defined environment configuration global available.
     process.PLAINS = { config };
