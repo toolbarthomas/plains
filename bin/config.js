@@ -36,13 +36,9 @@ module.exports = {
         publicPath: '/',
       },
       devServer: {
-        compress: false,
         contentBase: this.env.PLAINS_DIST,
         host: this.env.PLAINS_HOSTNAME,
-        inline: true,
-        open: true,
         port: this.env.PLAINS_PORT,
-        publicPath: '/',
       },
     };
 
@@ -88,27 +84,25 @@ module.exports = {
          */
         const options = Object.assign(defaults, this.getTemplateData(jsonPath));
 
-        // Create a new HtmlWebpack plugin to create a html file.
+        // Bundles the current entry file with a static HTML template.
         const page = new HtmlWebpackPlugin(options);
 
-        // Queue the current entry file
+        // Define the name of the initial entry file.
         entryConfig.entry[name] = [entry];
 
-        // Include the HMR middleware if the Plains is running under the devServer.
+        // Enable WDS for the current file.
         if (this.env.PLAINS_ENVIRONMENT === 'development' && this.args.serve) {
-          const address = `${this.env.PLAINS_HOSTNAME}:${this.env.PLAINS_PORT}`;
+          const address = `http://${this.env.PLAINS_HOSTNAME}:${this.env.PLAINS_PORT}`;
 
-          console.log(address);
-
-          entryConfig.entry[name].unshift(`webpack-dev-server/client?http://${address}`);
+          entryConfig.entry[name].unshift(`webpack-dev-server/client?${address}`);
         }
 
-        // Queue the current entry file for Webpack.
+        // Queue the current entry for Webpack.
         entryConfig.plugins.push(page);
       });
     }
 
-    // Return all entry files.
+    // Return all queued entry files.
     return entryConfig;
   },
 
