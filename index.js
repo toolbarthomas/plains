@@ -19,11 +19,21 @@ if (args.serve) {
     logger.info(`Server started at: ${devServer.host}:${devServer.port}`);
   });
 } else {
-  Webpack(config, err => {
+  Webpack(config, (err, stats) => {
     if (err) {
-      logger.error(err);
-    } else {
-      logger.success('Done!');
+      logger.error([err.stack || err, err.details ? err.details : null]);
     }
+
+    const info = stats.toJson();
+
+    if (stats.hasErrors()) {
+      logger.error(info.errors);
+    }
+
+    if (stats.hasWarnings()) {
+      logger.warning(info.warnings);
+    }
+
+    logger.success('Done!');
   });
 }
