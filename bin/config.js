@@ -21,6 +21,7 @@ module.exports = {
     const config = webpackMerge(
       this.getBaseConfig(),
       this.getEntryConfig(),
+      this.getTemplateConfig(),
       this.getBuilderConfig()
     );
 
@@ -31,7 +32,7 @@ module.exports = {
   },
 
   /**
-   * Defines the base configuration for Webpack.
+   * Define the base configuration for Webpack.
    */
   getBaseConfig() {
     const baseConfig = {
@@ -40,71 +41,47 @@ module.exports = {
         path: this.env.PLAINS_DIST,
         publicPath: '/',
       },
-      devServer: {
+    };
+
+    // Enable the devServer only for development environments.
+    if (this.env.PLAINS_ENVIRONMENT === 'development') {
+      baseConfig.devServer = {
         contentBase: this.env.PLAINS_DIST,
         host: this.env.PLAINS_HOSTNAME,
         port: this.env.PLAINS_PORT,
-      },
-    };
+      };
+    }
 
     return baseConfig;
   },
 
   /**
-   * Defines the entry configuration for Webpack.
+   * Get all entry files for Webpack defined within the Plains templates
+   * directory.
+   *
+   * @returns {Object} Webpack configuration Object with defined entries.
    */
   getEntryConfig() {
-    const entries = glob.sync(`${this.env.PLAINS_SRC}/templates/*/index.js`);
+    const entries = this.defineEntries();
 
     const entryConfig = {
       context: this.env.PLAINS_DIST,
       entry: {},
-      plugins: [],
     };
 
     if (entries.length > 0) {
       entries.forEach(entry => {
-        const stats = fs.statSync(entry);
-
-        // Skip empty entry files.
-        if (!stats.size) {
-          return;
-        }
-
-        // Strip out the extension before defining the entry key.
-        const extension = path.extname(entry);
-
-        // Define the entry key for the current Webpack entry file.
-        const name = entry.replace(`${this.env.PLAINS_SRC}/`, '').replace(extension, '');
-
-        // Define the path of the optional json file for the current template.
-        const jsonPath = entry.replace(extension, '.json');
-
-        const defaults = {
-          filename: `${name}.html`,
-        };
-
-        /**
-         * Defines the options from the optional json file located within current
-         * template directory.
-         */
-        const options = Object.assign(defaults, this.getTemplateData(jsonPath));
-
-        // Bundles the current entry file with a static HTML template.
-        const page = new HtmlWebpackPlugin(options);
+        const name = this.defineEntryName(entry);
 
         // Define the name of the initial entry file.
         entryConfig.entry[name] = [entry];
 
-        // Enable WDS for the current file.
+        // Enable WDS for the current entry.
         if (this.env.PLAINS_ENVIRONMENT === 'development' && this.args.serve) {
           const address = `http://${this.env.PLAINS_HOSTNAME}:${this.env.PLAINS_PORT}`;
 
           entryConfig.entry[name].unshift(`webpack-dev-server/client?${address}`);
         }
-
-        // Queue the current entry for Webpack.
-        entryConfig.plugins.push(page);
       });
     }
 
@@ -113,11 +90,97 @@ module.exports = {
   },
 
   /**
-   * Define the aditional data the current template.
+   * Renders the included template for the given entry file.
+   * Generate a static Html page if there is no template file defined within
+   * the directory of the current entry.
+   */
+  getTemplateConfig() {
+    const entries = this.defineEntries();
+
+    const templateConfig = {
+      plugins: [],
+    };
+
+    if (entries.length > 0) {
+      entries.forEach(entry => {
+        const name = this.defineEntryName(entry);
+
+        // Define the default configuration for HtmlWebpackPlugin.
+        const defaults = {
+          filename: `${name}.html`,
+        };
+
+        /**
+         * Defines the options from the optional json file located within current
+         * template directory.
+         */
+        const options = Object.assign(defaults, this.defineTemplateData(entry));
+
+        // Bundles the current entry file with a static HTML template.
+        const page = new HtmlWebpackPlugin(options);
+
+        // Queue the current entry for Webpack.
+        templateConfig.plugins.push(page);
+      });
+    }
+
+    return templateConfig;
+  },
+
+  /**
+   * Include the required plugins & loaders for basic Webpack asset preprocessing.
+   */
+  getBuilderConfig() {
+    const builderConfig = webpackMerge(babelBuilder, eslintBuilder, vueBuilder, styleBuilder);
+
+    return builderConfig;
+  },
+
+  /**
+   * Define the entry files from a globbing search within the
+   * Plains template directory and exclude empty entry files.
+   *
+   * @returns {Array} Array with all paths to the found entry files.
+   */
+  defineEntries() {
+    const globPath = path.resolve(
+      this.env.PLAINS_SRC,
+      this.env.PLAINS_TEMPLATE_DIRNAME,
+      '*/index.js'
+    );
+
+    const entries = glob.sync(globPath).filter(entry => {
+      return fs.statSync(entry).size;
+    });
+
+    return entries;
+  },
+
+  /**
+   * Use the relative path without extension from the current entry file.
+   *
+   * @param {String} entry The path of the current entry file.
+   */
+  defineEntryName(entry) {
+    // Define the extension so it can be removed from the entry path.
+    const extension = path.extname(entry);
+
+    /**
+     * Make the path of the current entry file relative by removing the
+     * working source directory.
+     */
+    return entry.replace(`${this.env.PLAINS_SRC}/`, '').replace(extension, '');
+  },
+
+  /**
+   * Define the aditional data for the current entry.
    *
    * @param {String} jsonPath The path to the defined json file from the given entry.
    */
-  getTemplateData(jsonPath) {
+  defineTemplateData(entry) {
+    const extension = path.extname(entry);
+    const jsonPath = entry.replace(extension, '.json');
+
     let data = {};
 
     if (fs.existsSync(jsonPath) && fs.statSync(jsonPath).size) {
@@ -131,14 +194,5 @@ module.exports = {
     }
 
     return data;
-  },
-
-  /**
-   * Include the required plugins & loaders for basic Webpack asset preprocessing.
-   */
-  getBuilderConfig() {
-    const builderConfig = webpackMerge(babelBuilder, eslintBuilder, vueBuilder, styleBuilder);
-
-    return builderConfig;
   },
 };
