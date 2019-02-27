@@ -11,6 +11,7 @@ module.exports = function config(e) {
     'postcss-nested-ancestors': {},
     'postcss-nested': {},
     'postcss-preset-env': {},
+    'postcss-modules': {},
     cssnano: {},
   };
 
