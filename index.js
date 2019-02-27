@@ -1,13 +1,24 @@
+const path = require('path');
 const Webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
-const logger = require('./bin/logger');
 
+const logger = require('./bin/logger');
 const args = require('./bin/args').init();
 const env = require('./bin/env').init(args);
 const config = require('./bin/config').init(args, env);
 
 // Start Plains
 if (args.serve) {
+  if (env.PLAINS_ENVIRONMENT !== 'development') {
+    logger.error([
+      'Webpack development server is only allowed for development environments.',
+      `You should set "PLAINS_ENVIRONMENT" to "development" within ${path.resolve(
+        process.cwd(),
+        '.env'
+      )}`,
+    ]);
+  }
+
   const compiler = Webpack(config);
   const { devServer } = config;
 
