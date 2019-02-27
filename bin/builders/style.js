@@ -24,7 +24,8 @@ module.exports = {
             loader: 'css-loader',
             options: {
               sourceMap: true,
-              modules: false, // Disable modules in favor of Postcss-modules.
+              modules: true,
+              localIdentName: '[local]___[hash:base64:5]',
             },
           },
           {

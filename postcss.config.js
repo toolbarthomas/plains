@@ -1,4 +1,8 @@
+const fs = require('fs');
 const glob = require('glob');
+const path = require('path');
+
+const env = require('./bin/env').init();
 
 module.exports = function config(e) {
   const plugins = {
@@ -11,7 +15,20 @@ module.exports = function config(e) {
     'postcss-nested-ancestors': {},
     'postcss-nested': {},
     'postcss-preset-env': {},
-    'postcss-modules': {},
+    'postcss-modules': {
+      getJSON: (filename, json) => {
+        const dirname = path.dirname(filename.replace(env.PLAINS_SRC, env.PLAINS_DIST));
+
+        if (fs.existsSync(dirname)) {
+          const name = path.basename(filename, '.css');
+
+          const jsonPath = path.resolve(dirname, `${name}.cssModules.json`);
+
+          fs.writeFileSync(jsonPath, JSON.stringify(json, null, 2));
+        }
+      },
+      generateScopedName: '[local]',
+    },
     cssnano: {},
   };
 
