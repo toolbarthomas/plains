@@ -1,12 +1,14 @@
 const path = require('path');
-
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const _ = require('lodash');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const env = require('../env').init();
 
 module.exports = {
-  plugins: [new VueLoaderPlugin(), new MiniCssExtractPlugin()],
+  context: path.resolve(__filename),
+  plugins: _.compact([
+    env.PLAINS_ENVIRONMENT !== 'development' ? new MiniCssExtractPlugin() : undefined,
+  ]),
   module: {
     rules: [
       {
@@ -14,9 +16,9 @@ module.exports = {
         use: [
           {
             loader:
-              env.PLAINS_ENVIRONMENT === 'development'
-                ? 'vue-style-loader'
-                : MiniCssExtractPlugin.loader,
+              env.PLAINS_ENVIRONMENT !== 'development'
+                ? MiniCssExtractPlugin.loader
+                : 'vue-style-loader',
           },
           {
             loader: 'css-loader',
