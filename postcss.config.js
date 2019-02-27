@@ -2,6 +2,7 @@ const glob = require('glob');
 
 module.exports = function config(e) {
   const plugins = {
+    'postcss-mixins': {},
     'postcss-at-rules-variables': {},
     'postcss-each': {},
     'postcss-import': {},
