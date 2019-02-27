@@ -88,6 +88,8 @@ module.exports = {
       throw env.error;
     }
 
+    logger.info('Defining environment configuration...');
+
     /**
      * Check if the default configuration keys are actually set from the found
      * dotenv environment file.
@@ -111,7 +113,7 @@ module.exports = {
       config[currentPath] = path.resolve(process.cwd(), config[currentPath]);
     });
 
-    logger.info(`Environment set for ${process.env.PLAINS_ENVIRONMENT}`);
+    logger.success(`Environment configuration defined for ${process.env.PLAINS_ENVIRONMENT}!`);
 
     // Make the defined environment configuration global available.
     process.PLAINS = { config };

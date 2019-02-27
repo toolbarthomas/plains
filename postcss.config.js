@@ -7,15 +7,16 @@ module.exports = function config(e) {
     'postcss-import': {},
     'postcss-for': {},
     'postcss-conditionals': {},
+    'postcss-nested-ancestors': {},
     'postcss-nested': {},
     'postcss-preset-env': {},
     cssnano: {},
   };
 
-  // Define the path of the optional configuration file.
+  // Get all YAML configuration files within the current stylesheet directory.
   const maps = glob.sync(`${e.file.dirname}/*.yml`);
 
-  // Include the Postcss Mapping plugin if an YAML configuration file is defined.
+  // Expose the YAML configuration Object as custom variables for Postcss.
   if (maps.length > 0) {
     plugins['postcss-map'] = {
       maps,

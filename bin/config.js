@@ -16,11 +16,16 @@ module.exports = {
     this.args = args;
     this.env = env;
 
+    logger.info('Defining Plains configuration...');
+
     const config = webpackMerge(
       this.getBaseConfig(),
       this.getEntryConfig(),
       this.getBuilderConfig()
     );
+
+    logger.success('Plains configuration successfully loaded!');
+    logger.info('Starting Plains...');
 
     return config;
   },
@@ -52,6 +57,7 @@ module.exports = {
     const entries = glob.sync(`${this.env.PLAINS_SRC}/templates/*/index.js`);
 
     const entryConfig = {
+      context: this.env.PLAINS_DIST,
       entry: {},
       plugins: [],
     };
