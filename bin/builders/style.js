@@ -24,8 +24,8 @@ module.exports = {
             loader: 'css-loader',
             options: {
               sourceMap: true,
-              modules: true,
-              localIdentName: '[local]___[hash:base64:5]',
+              modules: Boolean(env.PLAINS_CSS_MODULES),
+              localIdentName: env.PLAINS_CSS_MODULES ? '[local]___[hash:base64:5]' : '[local]',
             },
           },
           {

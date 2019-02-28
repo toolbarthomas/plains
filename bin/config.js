@@ -108,6 +108,7 @@ module.exports = {
         // Define the default configuration for HtmlWebpackPlugin.
         const defaults = {
           filename: `${name}.html`,
+          inject: true,
         };
 
         /**

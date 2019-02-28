@@ -79,13 +79,12 @@ module.exports = {
       config = defaults;
     }
 
-    env.config({
+    const environment = env.config({
       path: dotenvPath,
     });
 
-    // Thrown an exception if the environment contains any errors.
-    if (env.error) {
-      throw env.error;
+    if (environment.error) {
+      logger.error(environment.error);
     }
 
     logger.info('Defining environment configuration...');
@@ -95,16 +94,20 @@ module.exports = {
      * dotenv environment file.
      */
     _.forEach(defaults, (value, key) => {
-      if (!process.env[key]) {
+      if (!environment.parsed[key]) {
         if (this.args.verbose) {
           logger.warning(`Using default configuration value for ${key}`);
         }
 
-        process.env[key] = value;
+        environment.parsed[key] = value;
       }
-
-      config[key] = process.env[key];
     });
+
+    /**
+     * Merge the parsed environment variables & config defaults to use within
+     * the workflow.
+     */
+    _.merge(config, environment.parsed);
 
     // Make sure the source & destination paths are absolute
     const absolutePaths = ['PLAINS_SRC', 'PLAINS_DIST', 'PLAINS_PACKAGE_PATH'];
@@ -134,6 +137,7 @@ module.exports = {
       PLAINS_PACKAGE_PATH: './node_modules',
       PLAINS_HOSTNAME: '127.0.0.1',
       PLAINS_PORT: 8080,
+      PLAINS_CSS_MODULES: true,
       PLAINS_TEMPLATE_DIRNAME: 'templates',
     };
 
