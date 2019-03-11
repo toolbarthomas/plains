@@ -11,6 +11,8 @@ const config = require('./bin/config').init(args, env);
 
 // Start Plains
 if (args.serve) {
+  logger.info('Start the Webpack development server...');
+
   if (env.PLAINS_ENVIRONMENT !== 'development') {
     logger.error([
       'Webpack development server is only allowed for development environments.',
@@ -30,6 +32,8 @@ if (args.serve) {
     logger.success(`Server started at: ${devServer.host}:${devServer.port}`);
   });
 } else {
+  logger.info(`Creating Webpack build for ${env.PLAINS_ENVIRONMENT}...`);
+
   Webpack(config, (err, stats) => {
     if (err) {
       logger.error([err.stack || err, err.details ? err.details : null]);
@@ -45,7 +49,7 @@ if (args.serve) {
       logger.warning(info.warnings);
     } else {
       if (args.verbose) {
-        logger.info('Writing Webpack withint the working directory...');
+        logger.info('Writing Webpack within the working directory...');
 
         fs.writeFileSync(
           path.resolve(process.cwd(), 'webpack.stats.json'),

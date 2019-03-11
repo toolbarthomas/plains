@@ -87,7 +87,7 @@ module.exports = {
       logger.error(environment.error);
     }
 
-    logger.info('Defining environment configuration...');
+    logger.info('Defining the environment configuration...');
 
     /**
      * Check if the default configuration keys are actually set from the found
@@ -141,6 +141,7 @@ module.exports = {
       PLAINS_BASE_DIRNAME: 'base',
       PLAINS_RESOURCES_DIRNAME: 'resources',
       PLAINS_TEMPLATES_DIRNAME: 'templates',
+      PLAINS_MODULES_DIRNAME: 'modules',
     };
 
     return defaults;

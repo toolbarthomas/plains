@@ -17,7 +17,7 @@ module.exports = {
     this.args = args;
     this.env = env;
 
-    logger.info('Defining Plains configuration...');
+    logger.info('Defining configuration for Webpack');
 
     const config = webpackMerge(
       this.getBaseConfig(),
@@ -26,8 +26,7 @@ module.exports = {
       this.getBuilderConfig()
     );
 
-    logger.success('Plains configuration successfully loaded!');
-    logger.info('Starting Plains...');
+    logger.success('Webpack configuration successfully defined.');
 
     return config;
   },
