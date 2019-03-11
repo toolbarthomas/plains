@@ -41,6 +41,14 @@ module.exports = {
         path: this.env.PLAINS_DIST,
         publicPath: '/',
       },
+      module: {
+        rules: [
+          {
+            test: /\.(png|jpg|gif)$/i,
+            use: 'url-loader',
+          },
+        ],
+      },
     };
 
     // Enable the devServer only for development environments.
