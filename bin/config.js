@@ -10,6 +10,7 @@ const babelBuilder = require('./builders/babel');
 const eslintBuilder = require('./builders/eslint');
 const vueBuilder = require('./builders/vue');
 const styleBuilder = require('./builders/style');
+const svgSpriteBuilder = require('./builders/svgsprite');
 
 module.exports = {
   init(args, env) {
@@ -129,10 +130,17 @@ module.exports = {
   },
 
   /**
-   * Include the required plugins & loaders for basic Webpack asset preprocessing.
+   * Include the required plugins & loaders for basic Webpack resource
+   * preprocessing.
    */
   getBuilderConfig() {
-    const builderConfig = webpackMerge(babelBuilder, eslintBuilder, vueBuilder, styleBuilder);
+    const builderConfig = webpackMerge(
+      babelBuilder,
+      eslintBuilder,
+      svgSpriteBuilder,
+      vueBuilder,
+      styleBuilder
+    );
 
     return builderConfig;
   },
@@ -146,7 +154,7 @@ module.exports = {
   defineEntries() {
     const globPath = path.resolve(
       this.env.PLAINS_SRC,
-      this.env.PLAINS_TEMPLATE_DIRNAME,
+      this.env.PLAINS_TEMPLATES_DIRNAME,
       '*/index.js'
     );
 

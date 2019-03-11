@@ -95,7 +95,7 @@ module.exports = {
      */
     _.forEach(defaults, (value, key) => {
       if (!environment.parsed[key]) {
-        if (this.args.verbose) {
+        if (this.args && this.args.verbose) {
           logger.warning(`Using default configuration value for ${key}`);
         }
 
@@ -138,7 +138,9 @@ module.exports = {
       PLAINS_HOSTNAME: '127.0.0.1',
       PLAINS_PORT: 8080,
       PLAINS_CSS_MODULES: true,
-      PLAINS_TEMPLATE_DIRNAME: 'templates',
+      PLAINS_BASE_DIRNAME: 'base',
+      PLAINS_RESOURCES_DIRNAME: 'resources',
+      PLAINS_TEMPLATES_DIRNAME: 'templates',
     };
 
     return defaults;

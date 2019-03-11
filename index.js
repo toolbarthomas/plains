@@ -4,6 +4,7 @@ const WebpackDevServer = require('webpack-dev-server');
 
 const logger = require('./bin/logger');
 const args = require('./bin/args').init();
+
 const env = require('./bin/env').init(args);
 const config = require('./bin/config').init(args, env);
 
