@@ -45,7 +45,18 @@ module.exports = {
         rules: [
           {
             test: /\.(png|jpg|gif)$/i,
-            use: 'url-loader',
+            use: {
+              loader: 'file-loader',
+              options: {
+                outputPath: (url, resourcePath, context) => {
+                  // @todo Fix directories outisde PLAINS_SRC
+                  const outputPath = path.relative(this.env.PLAINS_SRC, resourcePath);
+                  const dirname = path.dirname(outputPath);
+
+                  return path.join(dirname, url);
+                },
+              },
+            },
           },
         ],
       },
