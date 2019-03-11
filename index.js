@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const Webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
@@ -43,6 +44,17 @@ if (args.serve) {
     if (stats.hasWarnings()) {
       logger.warning(info.warnings);
     } else {
+      if (args.verbose) {
+        logger.info('Writing Webpack withint the working directory...');
+
+        fs.writeFileSync(
+          path.resolve(process.cwd(), 'webpack.stats.json'),
+          JSON.stringify(stats.toJson(), null, 4)
+        );
+
+        logger.success('Webpack output successfully created.');
+      }
+
       logger.success('Done!');
     }
   });

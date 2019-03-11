@@ -1,5 +1,5 @@
 node_modules/
 .cache/
 .env
-.webpack.stats.*.json
+webpack.stats.json
 dist

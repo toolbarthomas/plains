@@ -22,7 +22,7 @@ module.exports = function config(e) {
         if (fs.existsSync(dirname)) {
           const name = path.basename(filename, '.css');
 
-          const jsonPath = path.resolve(dirname, `${name}.cssModules.json`);
+          const jsonPath = path.resolve(dirname, `${name}.cssModule.json`);
 
           fs.writeFileSync(jsonPath, JSON.stringify(json, null, 2));
         }
