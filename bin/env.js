@@ -138,10 +138,9 @@ module.exports = {
       PLAINS_HOSTNAME: '127.0.0.1',
       PLAINS_PORT: 8080,
       PLAINS_CSS_MODULES: true,
-      PLAINS_BASE_DIRNAME: 'base',
+      PLAINS_BASE_PATH: 'base',
+      PLAINS_TEMPLATES_PATH: 'templates',
       PLAINS_RESOURCES_DIRNAME: 'resources',
-      PLAINS_TEMPLATES_DIRNAME: 'templates',
-      PLAINS_MODULES_DIRNAME: 'modules',
     };
 
     return defaults;

@@ -63,9 +63,11 @@ module.exports = {
     };
 
     // Enable the devServer only for development environments.
-    if (this.env.PLAINS_ENVIRONMENT === 'development') {
+    if (this.env.PLAINS_ENVIRONMENT === 'development' && this.args.serve) {
+      // Remove the resolved path form the destination path.
+      baseConfig.output.publicPath = path.relative(process.cwd(), this.env.PLAINS_DIST);
+
       baseConfig.devServer = {
-        contentBase: this.env.PLAINS_DIST,
         host: this.env.PLAINS_HOSTNAME,
         port: this.env.PLAINS_PORT,
       };
@@ -172,7 +174,7 @@ module.exports = {
   defineEntries() {
     const globPath = path.resolve(
       this.env.PLAINS_SRC,
-      this.env.PLAINS_TEMPLATES_DIRNAME,
+      this.env.PLAINS_TEMPLATES_PATH,
       '*/index.js'
     );
 

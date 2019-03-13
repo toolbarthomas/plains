@@ -41,7 +41,7 @@ function prepareMap(rootDirectory, cwd) {
         title: false,
         symbol: true,
         use: true,
-        view: false
+        view: false,
       },
     },
   });
@@ -73,8 +73,8 @@ module.exports = (() => {
 
   // Define the base directories for each Plain
   const directories = [
-    path.join(cwd, env.PLAINS_BASE_DIRNAME),
-    path.join(cwd, env.PLAINS_TEMPLATES_DIRNAME),
+    path.join(cwd, env.PLAINS_BASE_PATH),
+    path.join(cwd, env.PLAINS_TEMPLATES_PATH),
   ];
 
   /**

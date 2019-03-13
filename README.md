@@ -41,5 +41,6 @@ body {
 
 ## SVG sprites
 
-Plains has the option to generate a SVG sprite for each Plains template.
-A SVG sprite will be created for each template directory if the current directory has any SVG files defined within the `PLAINS_RESOURCES_DIRECTORY`.
+Plains has the option to generate a SVG sprite for each template.
+A SVG sprite will be created from each directory if it any SVG files
+defined within the `PLAINS_RESOURCES_DIRNAME`.
