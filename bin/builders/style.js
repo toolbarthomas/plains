@@ -2,12 +2,12 @@ const path = require('path');
 const _ = require('lodash');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const env = require('../env').init();
+const Plains = require('../Plains');
 
 module.exports = {
   context: path.resolve(__filename),
   plugins: _.compact([
-    env.PLAINS_ENVIRONMENT !== 'development' ? new MiniCssExtractPlugin() : undefined,
+    Plains.env.PLAINS_ENVIRONMENT !== 'development' ? new MiniCssExtractPlugin() : undefined,
   ]),
   module: {
     rules: [
@@ -16,7 +16,7 @@ module.exports = {
         use: [
           {
             loader:
-              env.PLAINS_ENVIRONMENT !== 'development'
+              Plains.env.PLAINS_ENVIRONMENT !== 'development'
                 ? MiniCssExtractPlugin.loader
                 : 'vue-style-loader',
           },
@@ -24,8 +24,10 @@ module.exports = {
             loader: 'css-loader',
             options: {
               sourceMap: true,
-              modules: Boolean(env.PLAINS_CSS_MODULES),
-              localIdentName: env.PLAINS_CSS_MODULES ? '[local]___[hash:base64:5]' : '[local]',
+              modules: Boolean(Plains.env.PLAINS_CSS_MODULES),
+              localIdentName: Plains.env.PLAINS_CSS_MODULES
+                ? '[local]___[hash:base64:5]'
+                : '[local]',
             },
           },
           {

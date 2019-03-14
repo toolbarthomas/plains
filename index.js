@@ -3,18 +3,15 @@ const path = require('path');
 const Webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 
-const logger = require('./bin/logger');
-const args = require('./bin/args').init();
+const Plains = require('./bin/Plains');
+const Config = require('./bin/Config');
+const Logger = require('./bin/utils/Logger');
 
-const env = require('./bin/env').init(args);
-const config = require('./bin/config').init(args, env);
+if (Plains.args.serve) {
+  Logger.info('Start the Webpack development server...');
 
-// Start Plains
-if (args.serve) {
-  logger.info('Start the Webpack development server...');
-
-  if (env.PLAINS_ENVIRONMENT !== 'development') {
-    logger.error([
+  if (Plains.env.PLAINS_ENVIRONMENT !== 'development') {
+    Logger.error([
       'Webpack development server is only allowed for development environments.',
       `You should set "PLAINS_ENVIRONMENT" to "development" within ${path.resolve(
         process.cwd(),
@@ -23,43 +20,42 @@ if (args.serve) {
     ]);
   }
 
-  const compiler = Webpack(config);
-  const { devServer } = config;
+  const compiler = Webpack(Config.webpack);
+  const { devServer } = Config.webpack;
 
   const server = new WebpackDevServer(compiler, devServer);
-
   server.listen(devServer.port, devServer.host, () => {
-    logger.success(`Server started at: ${devServer.host}:${devServer.port}`);
+    Logger.success(`Server started at: ${devServer.host}:${devServer.port}`);
   });
 } else {
-  logger.info(`Creating Webpack build for ${env.PLAINS_ENVIRONMENT}...`);
+  Logger.info(`Creating Webpack build for ${Plains.env.PLAINS_ENVIRONMENT}...`);
 
-  Webpack(config, (err, stats) => {
+  Webpack(Config.webpack, (err, stats) => {
     if (err) {
-      logger.error([err.stack || err, err.details ? err.details : null]);
+      Logger.error([err.stack || err, err.details ? err.details : null]);
     }
 
     const info = stats.toJson();
 
     if (stats.hasErrors()) {
-      logger.error(info.errors);
+      Logger.error(info.errors);
     }
 
     if (stats.hasWarnings()) {
-      logger.warning(info.warnings);
+      Logger.warning(info.warnings);
     } else {
-      if (args.verbose) {
-        logger.info('Writing Webpack within the working directory...');
+      if (Plains.args.verbose) {
+        Logger.info('Writing Webpack within the working directory...');
 
         fs.writeFileSync(
           path.resolve(process.cwd(), 'webpack.stats.json'),
           JSON.stringify(stats.toJson(), null, 4)
         );
 
-        logger.success('Webpack output successfully created.');
+        Logger.success('Webpack output successfully created.');
       }
 
-      logger.success('Done!');
+      Logger.success('Done!');
     }
   });
 }

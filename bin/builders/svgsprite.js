@@ -4,7 +4,7 @@ const fs = require('fs');
 const glob = require('glob');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 
-const env = require('../env').init();
+const Plains = require('../Plains');
 
 /**
  * Glob for all SVG resources and create a new SVG Sprite Map instance
@@ -15,7 +15,7 @@ const env = require('../env').init();
  * @return {Function} SVGSpriteMapPlugin Instance
  */
 function prepareMap(rootDirectory, cwd) {
-  const svgDir = path.join(env.PLAINS_RESOURCES_DIRNAME, 'svg');
+  const svgDir = path.join(Plains.env.PLAINS_RESOURCES_DIRNAME, 'svg');
 
   // Define the globbing svg sourcepath.
   const source = path.join(rootDirectory, svgDir, '**/*.svg');
@@ -59,7 +59,7 @@ function prepareMap(rootDirectory, cwd) {
 function isTemplateDirectory(dirnames) {
   return (
     dirnames.filter(dirname => {
-      return dirname === path.basename(env.PLAINS_RESOURCES_DIRNAME);
+      return dirname === path.basename(Plains.env.PLAINS_RESOURCES_DIRNAME);
     }).length > 0
   );
 }
@@ -69,12 +69,12 @@ module.exports = (() => {
   const plugins = [];
 
   // Define the relative source path from the current working directory.
-  const cwd = path.relative('./', env.PLAINS_SRC);
+  const cwd = path.relative('./', Plains.env.PLAINS_SRC);
 
   // Define the base directories for each Plain
   const directories = [
-    path.join(cwd, env.PLAINS_BASE_PATH),
-    path.join(cwd, env.PLAINS_TEMPLATES_PATH),
+    path.join(cwd, Plains.env.PLAINS_BASE_PATH),
+    path.join(cwd, Plains.env.PLAINS_TEMPLATES_PATH),
   ];
 
   /**

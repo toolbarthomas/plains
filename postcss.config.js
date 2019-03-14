@@ -2,7 +2,7 @@ const fs = require('fs');
 const glob = require('glob');
 const path = require('path');
 
-const env = require('./bin/env').init();
+const Plains = require('./bin/Plains');
 
 module.exports = function config(e) {
   const plugins = {
@@ -17,7 +17,9 @@ module.exports = function config(e) {
     'postcss-preset-env': {},
     'postcss-modules': {
       getJSON: (filename, json) => {
-        const dirname = path.dirname(filename.replace(env.PLAINS_SRC, env.PLAINS_DIST));
+        const dirname = path.dirname(
+          filename.replace(Plains.env.PLAINS_SRC, Plains.env.PLAINS_DIST)
+        );
 
         if (fs.existsSync(dirname)) {
           const name = path.basename(filename, '.css');
