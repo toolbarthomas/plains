@@ -1,7 +1,5 @@
-const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
-const glob = require('glob');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 
 const Plains = require('../Plains');
