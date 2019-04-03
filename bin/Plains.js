@@ -1,64 +1,75 @@
-const _ = require('lodash');
-const env = require('dotenv');
+const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 
-const Logger = require('./utils/Logger');
+const Builder = require('./Builder');
 
 class Plains {
   constructor() {
-    this.args = Plains.defineArguments();
-    this.env = Plains.defineEnvironment();
+    this.args = {};
+    this.env = {};
+    this.builder = {};
+
+    this.init();
+  }
+
+  init() {
+    this.defineArgs();
+    this.defineEnvironmentConfig();
+    this.defineBuilder();
   }
 
   /**
-   * Define the command-line arguments from the running Node process.
+   * Define the CLI arguments for Plains.
    */
-  static defineArguments() {
+  defineArgs() {
     const { argv } = process;
 
-    const defaults = {
+    const defaultArguments = {
       serve: false,
       silent: false,
       verbose: false,
     };
 
-    if (process.argv.length < 3) {
-      return defaults;
+    // Don't define the environment specific variables twice.
+    if (this.args instanceof Object && Object.keys(this.args).length > 0) {
+      return;
     }
 
-    const options = {};
+    const args = {};
 
-    argv.slice(2).forEach(argument => {
-      if (argument.indexOf('=') >= 0) {
-        const value = String(argument.substring(argument.indexOf('=') + 1));
-        const key = String(argument.split('=')[0]);
+    if (argv.length > 2) {
+      argv.slice(2).forEach(arg => {
+        if (arg.indexOf('=') >= 0) {
+          const value = String(arg.substring(arg.indexOf('=') + 1));
+          const key = String(arg.split('=')[0]);
 
-        // Convert values with true or false to an actual Boolean.
-        switch (value.toLowerCase()) {
-          case 'true':
-            options[key] = true;
-            break;
-          case 'false':
-            options[key] = false;
-            break;
-          default:
-            options[key] = value;
-            break;
+          // Convert values with true or false to an actual Boolean.
+          switch (value.toLowerCase()) {
+            case 'true':
+              args[key] = true;
+              break;
+            case 'false':
+              args[key] = false;
+              break;
+            default:
+              args[key] = value;
+              break;
+          }
+        } else {
+          args[arg] = true;
         }
-      } else {
-        options[argument] = true;
-      }
-    });
+      });
+    }
 
-    return Object.assign(defaults, options);
+    this.args = Object.assign(defaultArguments, args);
   }
 
   /**
-   * Define the environment specific configuration.
+   * Define environment specific configuration from the optional dotenv file.
    */
-  static defineEnvironment() {
-    const defaults = {
+  defineEnvironmentConfig() {
+    const defaultConfig = {
       PLAINS_ENVIRONMENT: 'production',
       PLAINS_SRC: './src',
       PLAINS_DIST: './dist',
@@ -71,70 +82,45 @@ class Plains {
       PLAINS_RESOURCES_DIRNAME: 'resources',
     };
 
-    // Prevents the config from being set again.
-    if ('PLAINS' in process) {
-      return process.PLAINS;
+    // Don't define the environment specific variables twice.
+    if (this.env instanceof Object && Object.keys(this.env).length > 0) {
+      return;
     }
 
-    // Stores the optional environment variables.
-    let config = {};
+    const config = {};
 
-    // Define the source of the dotenv file.
+    // Define the path to the dotenv environment file.
     const source = path.resolve(process.cwd(), '.env');
 
+    // Use the default configuration if the dotenv file doesn't exists.
     if (!fs.existsSync(source)) {
-      if (Plains.defineArguments().args.verbose) {
-        Logger.warning(
-          'The optional environment file is not defined, the default configuration will be used.'
-        );
-      }
-
-      config = defaults;
+      Object.assign(config, defaultConfig);
     }
 
-    const envObject = env.config({
+    const environmentConfig = dotenv.config({
       path: source,
     });
 
-    if (envObject.error) {
-      Logger.error(envObject.error);
+    if (environmentConfig.error) {
+      throw new Error(environmentConfig.error);
     }
 
-    Logger.info('Defining the environment configuration...');
-
-    /**
-     * Check if the default configuration keys are actually set from the found
-     * dotenv environment file.
-     */
-    _.forEach(defaults, (value, key) => {
-      if (!envObject.parsed[key]) {
-        if (this.args && this.args.verbose) {
-          Logger.warning(`Using default configuration value for ${key}`);
-        }
-
-        envObject.parsed[key] = value;
+    Object.keys(defaultConfig).forEach(key => {
+      if (!environmentConfig.parsed || !environmentConfig.parsed[key]) {
+        config[key] = defaultConfig[key];
       }
     });
 
-    /**
-     * Merge the parsed environment variables & config defaults to use within
-     * the workflow.
-     */
-    _.merge(config, envObject.parsed);
+    this.env = Object.assign(config, environmentConfig.parsed);
+  }
 
-    // Make sure the source & destination paths are absolute
-    const absolutePaths = ['PLAINS_SRC', 'PLAINS_DIST', 'PLAINS_PACKAGE_PATH'];
+  /**
+   * Defines the configuration for the Plains workflow.
+   */
+  defineBuilder() {
+    const { args, env } = this;
 
-    absolutePaths.forEach(currentPath => {
-      config[currentPath] = path.resolve(process.cwd(), config[currentPath]);
-    });
-
-    Logger.success(`Environment configuration defined for ${process.env.PLAINS_ENVIRONMENT}!`);
-
-    // Make the config global.
-    process.PLAINS = { config };
-
-    return config;
+    this.builder = new Builder(args, env);
   }
 }
 
