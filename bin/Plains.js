@@ -2,7 +2,8 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 
-const Builder = require('./Builder');
+const Builder = require('./lib/Builder');
+const Logger = require('./lib/Logger');
 
 class Plains {
   constructor() {
@@ -14,9 +15,17 @@ class Plains {
   }
 
   init() {
+    this.defineLogger();
     this.defineArgs();
     this.defineEnvironmentConfig();
     this.defineBuilder();
+  }
+
+  /**
+   * Define the logger
+   */
+  defineLogger() {
+    this.log = new Logger();
   }
 
   /**
@@ -120,7 +129,11 @@ class Plains {
   defineBuilder() {
     const { args, env } = this;
 
-    this.builder = new Builder(args, env);
+    if (!args || !env) {
+      return;
+    }
+
+    this.builder = {};
   }
 }
 
