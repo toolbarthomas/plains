@@ -6,6 +6,12 @@ const { sync } = require('glob');
 
 const { getDirectories } = require('../Helpers');
 
+/**
+ * Defines the static templates for Webpack.
+ *
+ * @param {Object} args Defines the Plains arguments from the CLI.
+ * @param {Object} env Define the environment configuration for Plains.
+ */
 class TemplateBuilder {
   constructor(args, env) {
     this.args = args;
@@ -76,6 +82,7 @@ class TemplateBuilder {
         ],
       }
 
+      // Define the actual template configuration.
       this.config = merge(this.config, config);
     });
   }

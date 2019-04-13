@@ -59,7 +59,7 @@ if (Plains.args.serve) {
         Plains.log.success('Webpack output successfully created.');
       }
 
-      Plains.log.success('Done!');
+      Plains.log.success(`Done! [${Plains.outputTime()}]`);
     }
   });
 }

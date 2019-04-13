@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
+const prettyHrtime = require('pretty-hrtime');
 
 const Builder = require('./lib/Builder/Index');
 const Logger = require('./lib/Logger');
@@ -10,6 +11,7 @@ class Plains {
     this.args = {};
     this.env = {};
     this.builder = {};
+    this.time = process.hrtime();
 
     this.init();
   }
@@ -22,10 +24,19 @@ class Plains {
   }
 
   /**
+   * Output the elapsed runtime of Plains.
+   */
+  outputTime() {
+    const diff = process.hrtime(this.time);
+
+    return prettyHrtime(diff);
+  }
+
+  /**
    * Define the logger
    */
   defineLogger() {
-    this.log = new Logger();
+    this.log = Logger;
   }
 
   /**
@@ -127,11 +138,11 @@ class Plains {
       }
     });
 
-    // Define DEVELOPMENT_MODE flag if environment is set to `development`.
-    config.PLAINS_DEVMODE = config.PLAINS_ENVIRONMENT === 'development';
-
     // Define the actual environment configuration.
     this.env = Object.assign(config, environmentConfig.parsed);
+
+    // Define DEVELOPMENT_MODE flag if environment is set to `development`.
+    this.env.PLAINS_DEVMODE = (this.env.PLAINS_ENVIRONMENT === 'development');
   }
 
   /**

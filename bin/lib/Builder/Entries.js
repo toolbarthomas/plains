@@ -3,6 +3,12 @@ const { statSync } = require('fs');
 const { sync } = require('glob');
 const merge = require('webpack-merge');
 
+/**
+ * Define the Webpack entry configuration from the Plains entry structure.
+ *
+ * @param {Object} args Defines the Plains arguments from the CLI.
+ * @param {Object} env Define the environment configuration for Plains.
+ */
 class Entries {
   constructor(args, env) {
     this.args = args;

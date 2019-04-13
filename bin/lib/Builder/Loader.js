@@ -1,6 +1,12 @@
 const { dirname, join, relative } = require('path');
 const merge = require('webpack-merge');
 
+/**
+ * Define the Webpack Loader configuration.
+ *
+ * @param {Object} args Defines the Plains arguments from the CLI.
+ * @param {Object} env Define the environment configuration for Plains.
+ */
 class Loader {
   constructor(args, env) {
     this.args = args;
@@ -11,6 +17,7 @@ class Loader {
 
   define() {
     this.defineFileLoader();
+    this.defineBabelLoader();
   }
 
   defineFileLoader() {
@@ -31,6 +38,20 @@ class Loader {
             },
           }
         ]
+      }
+    });
+  }
+
+  defineBabelLoader() {
+    this.config = merge(this.config, {
+      module: {
+        rules: [
+          {
+            test: /\.js$/,
+            exclude: /node_modules/,
+            use: 'babel-loader',
+          },
+        ],
       }
     });
   }
