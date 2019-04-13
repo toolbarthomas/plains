@@ -2,7 +2,7 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 
-const Builder = require('./lib/Builder');
+const Builder = require('./lib/Builder/Index');
 const Logger = require('./lib/Logger');
 
 class Plains {
@@ -96,44 +96,54 @@ class Plains {
       return;
     }
 
+    // Prepare the actual environment configuration.
     const config = {};
 
     // Define the path to the dotenv environment file.
     const source = path.resolve(process.cwd(), '.env');
 
+    let environmentConfig = {
+      parsed: {}
+    };
+
     // Use the default configuration if the dotenv file doesn't exists.
     if (!fs.existsSync(source)) {
       Object.assign(config, defaultConfig);
     }
+    else {
+      environmentConfig = dotenv.config({
+        path: source,
+      });
 
-    const environmentConfig = dotenv.config({
-      path: source,
-    });
-
-    if (environmentConfig.error) {
-      throw new Error(environmentConfig.error);
+      if (environmentConfig.error) {
+        throw new Error(environmentConfig.error);
+      }
     }
 
+    // Define any default value for any missing custom variable.
     Object.keys(defaultConfig).forEach(key => {
       if (!environmentConfig.parsed || !environmentConfig.parsed[key]) {
         config[key] = defaultConfig[key];
       }
     });
 
+    // Define DEVELOPMENT_MODE flag if environment is set to `development`.
+    config.PLAINS_DEVMODE = config.PLAINS_ENVIRONMENT === 'development';
+
+    // Define the actual environment configuration.
     this.env = Object.assign(config, environmentConfig.parsed);
   }
 
   /**
-   * Defines the configuration for the Plains workflow.
+   * Define the resource builder for Plains.
    */
   defineBuilder() {
-    const { args, env } = this;
+    this.builder = new Builder(
+      this.args,
+      this.env
+    );
 
-    if (!args || !env) {
-      return;
-    }
-
-    this.builder = {};
+    this.builder.define();
   }
 }
 
