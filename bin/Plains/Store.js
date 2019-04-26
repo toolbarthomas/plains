@@ -2,16 +2,16 @@ const { warning } = require('./Common/Logger');
 
 class Store {
   constructor() {
-    this.stores = new Map();
+    this.buckets = new Map();
   }
 
   /**
-   * Create a new Map instance to use as new Store.
+   * Creates a new Map instance to use as new Store.
    *
    * @param {String} name The name of the store to create.
    */
   create(name) {
-    if (this.stores && !this.stores[name]) {
+    if (this.buckets instanceof Map && !this.buckets.get(name)) {
       // Use the state Map to store the commited data into.
       const state = ['state', new Map()];
 
@@ -19,28 +19,30 @@ class Store {
       const instance = ['instance', new Map()];
 
       // Create the new Store witn the defined name.
-      this.stores.set(name, new Map([state, instance]));
+      this.buckets.set(name, new Map([state, instance]));
     }
   }
 
   /**
-   * Get the defined Store as Map
+   * Get the selected Bucket from the Store.
    *
    * @param {String} name The name of the store to use.
    *
    * @returns {Map|Boolean} Returns the Map if the actual Store exists.
    */
   use(name) {
-    return this.stores instanceof Map && this.stores.get(name) && this.stores.get(name).get('state')
-      ? this.stores.get(name)
-      : null;
+    return this.buckets instanceof Map &&
+      this.buckets.get(name) &&
+      this.buckets.get(name).get('state')
+      ? this.buckets.get(name)
+      : undefined;
   }
 
   /**
-   * Commit the defined data within the selected store.
+   * Commit the defined data within the selected Bucket.
    *
-   * @param {String} name The actual Store to Map the data to.
-   * @param {Object} data The data object to commit within the Store.
+   * @param {String} name The actual Bucket to commit the data to.
+   * @param {Object} data The data object to commit within the Bucket.
    */
   commit(name, data) {
     let store = this.use(name);
@@ -56,7 +58,7 @@ class Store {
       const entries = Object.keys(data);
 
       entries.forEach(entry => {
-        this.stores
+        this.buckets
           .get(name)
           .get('state')
           .set(entry, data[entry]);
@@ -67,10 +69,10 @@ class Store {
   }
 
   /**
-   * Get the defined value of the selected Store.
+   * Fetches the defined Bucket, if the entry paramater has been defined.
    *
    * @param {String} name The actual Store to Map the data to.
-   * @param {String} entry Get the key value of the given Store.
+   * @param {String} entry Get only the selected entry when defined.
    *
    * @returns {*} The found value of the defined Store.
    */
@@ -78,19 +80,19 @@ class Store {
     const store = this.use(name);
 
     if (!store || !(store instanceof Map)) {
-      return null;
+      return undefined;
     }
 
     // Return the defined value of the selected Store if the given key exists.
     if (entry && store.get('state') instanceof Map) {
-      return store.get('state').get(entry) || null;
+      return store.get('state').get(entry) || undefined;
     }
 
     const state = {};
     const keys = store.get('state').keys();
 
     if (!keys) {
-      return null;
+      return undefined;
     }
 
     // Convert the given state into a Javascript Object.
@@ -104,7 +106,7 @@ class Store {
   }
 
   /**
-   * Clears the current Map of the selected Store.
+   * Clears the selected bucket from the Store.
    *
    * @param {String} name The name of the store to prune.
    */
@@ -112,30 +114,20 @@ class Store {
     const store = this.use(name);
 
     if (store) {
-      this.stores.delete(name);
+      this.buckets.get(name).delete('state');
+      this.buckets.get(name).delete('instance');
     } else {
       warning(`Unable to prune store '${name}', since it doesn't exist`);
     }
   }
 
   /**
-   * Return an Array with the name of each Store.
+   * Output an array with all bucket entry names.
    *
    * @returns {Array} The array with Store entries to return.
    */
   list() {
-    return this.stores && this.stores instanceof Map ? [...this.stores.keys()] : [];
-  }
-
-  /**
-   * Assigns the defined instance
-   */
-  assign(name, instance) {
-    const store = this.use(name);
-
-    if (instance && store) {
-      this.instances.set(instance);
-    }
+    return this.buckets && this.buckets instanceof Map ? [...this.buckets.keys()] : [];
   }
 }
 

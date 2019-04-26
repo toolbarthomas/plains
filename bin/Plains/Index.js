@@ -26,18 +26,20 @@ class Plains {
   }
 
   setup() {
-    this.Store.create('bucket');
-    // console.log(this.Store.stores);
+    // Creates a new bucket
+    this.Store.create('example');
 
-    this.Store.commit('bucket', { title: 'Welcome to plains' });
-    this.Store.commit('social', { title: '001' });
+    // Bind some data to the selected bucket.
+    this.Store.commit('example', { title: 'Welcome to plains' });
 
-    // console.log(this.Store.use('bucket').get('title'));
-    // console.log(this.Store.fetch('bucket', 'title'));
+    // Fetch a single value from the selected Bucket.
+    console.log(this.Store.fetch('example', 'title'));
 
+    // Fetch the complete Object from the selected Bucket.
+    console.log(this.Store.fetch('example'));
+
+    // List the defined Buckets
     console.log(this.Store.list());
-
-    this.Store.prune('bucket');
   }
 }
 
