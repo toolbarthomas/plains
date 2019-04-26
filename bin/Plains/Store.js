@@ -12,7 +12,14 @@ class Store {
    */
   create(name) {
     if (this.stores && !this.stores[name]) {
-      this.stores.set(name, new Map());
+      // Use the state Map to store the commited data into.
+      const state = ['state', new Map()];
+
+      // Collection of instances to emit events from after a mutation occurs.
+      const instance = ['instance', new Map()];
+
+      // Create the new Store witn the defined name.
+      this.stores.set(name, new Map([state, instance]));
     }
   }
 
@@ -24,7 +31,9 @@ class Store {
    * @returns {Map|Boolean} Returns the Map if the actual Store exists.
    */
   use(name) {
-    return this.stores instanceof Map && this.stores.get(name) ? this.stores.get(name) : null;
+    return this.stores instanceof Map && this.stores.get(name) && this.stores.get(name).get('state')
+      ? this.stores.get(name)
+      : null;
   }
 
   /**
@@ -47,7 +56,10 @@ class Store {
       const entries = Object.keys(data);
 
       entries.forEach(entry => {
-        this.stores.get(name).set(entry, data[entry]);
+        this.stores
+          .get(name)
+          .get('state')
+          .set(entry, data[entry]);
       });
     } else {
       warning(`Unable to commit the data within ${name}, the given data is not a valid Object`);
@@ -65,7 +77,30 @@ class Store {
   fetch(name, entry) {
     const store = this.use(name);
 
-    return store && store instanceof Map ? store.get(entry) : null;
+    if (!store || !(store instanceof Map)) {
+      return null;
+    }
+
+    // Return the defined value of the selected Store if the given key exists.
+    if (entry && store.get('state') instanceof Map) {
+      return store.get('state').get(entry) || null;
+    }
+
+    const state = {};
+    const keys = store.get('state').keys();
+
+    if (!keys) {
+      return null;
+    }
+
+    // Convert the given state into a Javascript Object.
+    [...keys].forEach(key => {
+      if (!Object.prototype.hasOwnProperty.call(state, key)) {
+        state[key] = store.get('state').get(key);
+      }
+    });
+
+    return state;
   }
 
   /**
@@ -90,6 +125,17 @@ class Store {
    */
   list() {
     return this.stores && this.stores instanceof Map ? [...this.stores.keys()] : [];
+  }
+
+  /**
+   * Assigns the defined instance
+   */
+  assign(name, instance) {
+    const store = this.use(name);
+
+    if (instance && store) {
+      this.instances.set(instance);
+    }
   }
 }
 
