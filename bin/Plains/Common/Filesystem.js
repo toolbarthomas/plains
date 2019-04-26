@@ -1,5 +1,5 @@
-const { join } = require('path')
-const { existsSync, lstatSync, readdirSync } = require('fs')
+const { join } = require('path');
+const { existsSync, lstatSync, readdirSync } = require('fs');
 
 class FileSystem {
   /**
@@ -15,7 +15,7 @@ class FileSystem {
     if (existsSync(path)) {
       directories = readdirSync(path)
         .map(name => join(path, name))
-        .filter(source => lstatSync(source).isDirectory())
+        .filter(source => lstatSync(source).isDirectory());
     }
 
     return directories;
