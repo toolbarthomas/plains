@@ -52,4 +52,4 @@ class Argv {
   }
 }
 
-module.exports = new Argv();
+module.exports = Argv;

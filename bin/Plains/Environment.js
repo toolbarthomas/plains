@@ -2,6 +2,10 @@ const { config } = require('dotenv');
 const { join } = require('path');
 const { existsSync } = require('fs');
 
+const { error, info, success } = require('./Common/Logger');
+
+const Store = require('./Store');
+
 /**
  * Defines the Plains environment variables from the given dotenv file.
  * Use the default environment configuration for undefined options.
@@ -20,6 +24,8 @@ class Environment {
       PLAINS_TEMPLATES_PATH: 'templates',
       PLAINS_RESOURCES_DIRNAME: 'resources',
     };
+
+    Store.store = 'foo';
   }
 
   /**
@@ -38,8 +44,10 @@ class Environment {
 
     // Throw an exception if the parsed configuration is invalid.
     if (env.error) {
-      throw new Error(env.error);
+      error(env.error);
     }
+
+    info(`Defining the environment configuration for Plains.`);
 
     // Inherit any missing option from the defaults Object.
     Object.keys(this.defaults).forEach(option => {
@@ -51,9 +59,10 @@ class Environment {
     // Enable DEVMODE flag if the current environment is set to 'development'.
     parsed.PLAINS_DEVMODE = parsed.PLAINS_ENVIRONMENT === 'development';
 
-    // Return the parsed environment configuration.
+    success(`Environment configuration defined for ${parsed.PLAINS_ENVIRONMENT}!`);
+
     return parsed;
   }
 }
 
-module.exports = new Environment();
+module.exports = Environment;
