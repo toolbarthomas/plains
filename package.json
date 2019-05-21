@@ -28,6 +28,7 @@
   "homepage": "https://github.com/toolbarthomas/plains#readme",
   "dependencies": {
     "domready": "^1.0.8",
+    "module-config-loader": "^0.2.0",
     "vue": "^2.5.22",
     "vue-router": "^3.0.2"
   },

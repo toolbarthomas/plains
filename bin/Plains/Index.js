@@ -1,4 +1,5 @@
 const Argv = require('./Argv');
+const Config = require('./Config');
 const Environment = require('./Environment');
 const Store = require('./Store');
 
@@ -17,6 +18,11 @@ class Plains {
     this.Environment = new Environment();
 
     /**
+     * Defines the common configuration.
+     */
+    this.Config = new Config();
+
+    /**
      * Create a new Store instance in order to interchange the data between
      * the various Builders.
      */
@@ -26,6 +32,7 @@ class Plains {
   }
 
   setup() {
+
     // Creates a new bucket
     this.Store.create('example');
 
