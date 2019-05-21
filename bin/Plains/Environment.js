@@ -4,8 +4,6 @@ const { existsSync } = require('fs');
 
 const { error, info, success } = require('./Common/Logger');
 
-const Store = require('./Store');
-
 /**
  * Defines the Plains environment variables from the given dotenv file.
  * Use the default environment configuration for undefined options.

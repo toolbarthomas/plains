@@ -1,5 +1,5 @@
 const { load } = require('module-config-loader');
-const Logger = require('./Common/Logger');
+const { error, info, warning } = require('./Common/Logger');
 
 class Config {
   constructor() {
@@ -31,7 +31,7 @@ class Config {
   get(option) {
     // Only proceed if the requested option actually exists.
     if (!this.defaults[option]) {
-      Logger.error(`'${option}' is not a valid configuration option for Plains`);
+      error(`'${option}' is not a valid configuration option for Plains`);
     }
 
     /**
@@ -39,7 +39,7 @@ class Config {
      * before loading it from the external configuration file.
      */
     if (this.config && this.config[option]) {
-      Logger.info(`Loading '${option}' from the cache.`);
+      info(`Loading '${option}' from the cache.`);
       return this.config[option];
     }
 
@@ -80,7 +80,7 @@ class Config {
       // Cache the parsed configuration for the current process.
       this.config[option] = this.parsed[option];
     } else if (typeof this.defaults[option] !== typeof this.parsed[option]) {
-      Logger.warning(
+      warning(
         `'${option}' does not match with the expected configuration scheme and will be ignored.`
       );
 
@@ -95,7 +95,7 @@ class Config {
    */
   prune(option) {
     if (this.config && this.config[option]) {
-      Logger.info(`'${option}' has been removed from the configuration cache.`);
+      info(`'${option}' has been removed from the configuration cache.`);
       delete this.config[option];
     }
   }
