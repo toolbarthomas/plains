@@ -1,10 +1,11 @@
 const Argv = require('./Argv');
+const Builder = require('./Builder');
 const Config = require('./Config');
 const Environment = require('./Environment');
 const Store = require('./Store');
 
 class Plains {
-  constructor() {
+  constructor(config) {
     /**
      * Store the CLI inserted arguments within the Plains object for easy
      * access within the Plains Builder.
@@ -20,7 +21,7 @@ class Plains {
     /**
      * Defines the common configuration.
      */
-    this.Config = new Config();
+    this.Config = new Config(config);
 
     /**
      * Create a new Store instance in order to interchange the data between
@@ -28,26 +29,22 @@ class Plains {
      */
     this.Store = new Store();
 
-    this.setup();
+    /**
+     * Create a new Builder instance that handles all processing tasks.
+     */
+    this.Builder = new Builder(this.Argv, this.Environment, this.Config, this.Store);
   }
 
-  setup() {
-
-    // Creates a new bucket
-    this.Store.create('example');
-
-    // Bind some data to the selected bucket.
-    this.Store.commit('example', { title: 'Welcome to plains' });
-
-    // Fetch a single value from the selected Bucket.
-    console.log(this.Store.fetch('example', 'title'));
-
-    // Fetch the complete Object from the selected Bucket.
-    console.log(this.Store.fetch('example'));
-
-    // List the defined Buckets
-    console.log(this.Store.list());
+  /**
+   * Initialize Plains.
+   *
+   * @param {*} config The custom configuration Object for Plains
+   */
+  async init() {
+    this.Builder.run().then(() => {
+      console.log('Done');
+    });
   }
 }
 
-module.exports = new Plains();
+module.exports = Plains;

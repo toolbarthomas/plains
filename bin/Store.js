@@ -69,14 +69,14 @@ class Store {
   }
 
   /**
-   * Fetches the defined Bucket, if the entry paramater has been defined.
+   * Get the defined Bucket, if the entry paramater has been defined.
    *
    * @param {String} name The actual Store to Map the data to.
    * @param {String} entry Get only the selected entry when defined.
    *
    * @returns {*} The found value of the defined Store.
    */
-  fetch(name, entry) {
+  get(name, entry) {
     const store = this.use(name);
 
     if (!store || !(store instanceof Map)) {
