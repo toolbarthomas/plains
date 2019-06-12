@@ -1,4 +1,4 @@
-const { warning } = require('./Common/Logger');
+const { warning } = require('../Utils/Logger');
 
 class Store {
   constructor() {

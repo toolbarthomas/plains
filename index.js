@@ -1,5 +1,7 @@
-const Plains = require('./bin/Plains');
+const Plains = require('./core/Plains');
 
 const App = new Plains();
 
-App.init();
+App.boot();
+
+App.run();

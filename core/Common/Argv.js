@@ -7,6 +7,7 @@ class Argv {
       serve: false,
       silent: false,
       verbose: false,
+      task: 'default',
     };
 
     this.args = {};
@@ -17,7 +18,7 @@ class Argv {
    *
    * @returns {Object} Object with defined CLI arguments.
    */
-  getArguments() {
+  define() {
     const { argv } = process;
 
     if (argv[2]) {
@@ -44,10 +45,7 @@ class Argv {
       });
     }
 
-    // Inherit any missing default argument.
-    const args = Object.assign(this.defaults, this.args);
-
-    return args;
+    return Object.assign(this.defaults, this.args);
   }
 }
 
