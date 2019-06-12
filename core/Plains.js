@@ -1,6 +1,8 @@
 const Argv = require('./Common/Argv');
 const Config = require('./Common/Config');
 
+const Contractor = require('./Services/Contractor');
+const Store = require('./Services/Store');
 class Plains {
   constructor(options) {
     const { config } = options instanceof Object ? options : {};
@@ -14,9 +16,12 @@ class Plains {
     };
 
     /**
-     * Expose the required builders for Plains.
+     * Assigns the default Plains services.
      */
-    this.builders = {};
+    this.services = {
+      Contractor: new Contractor(),
+      Store: new Store(),
+    };
   }
 
   /**
@@ -24,21 +29,24 @@ class Plains {
    */
   boot() {
     // Defines the processed command line interface arguments.
-    this.args = this.common.Argv.define();
+    this.args = this.common.Argv.define() || {};
 
     // Defines the actual application configuration.
     this.config = this.common.Config.define();
 
-    console.log(this);
+    // Defines the store for assigning the application state.
+    this.services.Store.create('common');
 
-    console.log('Booting');
+    console.log(this.services.Contractor);
   }
 
   /**
    * Initialize Plains.
    */
   run() {
-    console.log('Running');
+    const { task } = this.args;
+
+    console.log(this.services.Contractor);
   }
 }
 
