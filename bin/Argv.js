@@ -8,20 +8,19 @@ class Argv {
       silent: false,
       verbose: false,
     };
+
+    this.args = {};
   }
 
   /**
-   * Get the given CLI arguments.
+   * Return all defined CLI arguments from process.argv.
    *
-   * @returns {Object} Object with CLI given arguments.
+   * @returns {Object} Object with defined CLI arguments.
    */
-  get args() {
+  getArguments() {
     const { argv } = process;
 
-    let args = {};
-
-    // Make sure we have actual arguments defined.
-    if (argv.length > 2) {
+    if (argv[2]) {
       argv.slice(2).forEach(arg => {
         if (arg.indexOf('=') >= 0) {
           const value = String(arg.substring(arg.indexOf('=') + 1));
@@ -30,23 +29,23 @@ class Argv {
           // Convert values with true or false to an actual Boolean.
           switch (value.toLowerCase()) {
             case 'true':
-              args[key] = true;
+              this.args[key] = true;
               break;
             case 'false':
-              args[key] = false;
+              this.args[key] = false;
               break;
             default:
-              args[key] = value;
+              this.args[key] = value;
               break;
           }
         } else {
-          args[arg] = true;
+          this.args[arg] = true;
         }
       });
     }
 
     // Inherit any missing default argument.
-    args = Object.assign(this.defaults, args);
+    const args = Object.assign(this.defaults, this.args);
 
     return args;
   }

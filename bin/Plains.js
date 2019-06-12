@@ -4,46 +4,51 @@ const Config = require('./Config');
 const Environment = require('./Environment');
 const Store = require('./Store');
 
+const { error } = require('./Common/Logger');
+
 class Plains {
   constructor(config) {
     /**
-     * Store the CLI inserted arguments within the Plains object for easy
-     * access within the Plains Builder.
+     * Expose the arguments defined by the CLI within Plains.
      */
     this.Argv = new Argv();
 
     /**
-     * Define the environment variables from the optional dotenv environment
-     * file.
+     * Expose environment specific variables within Plains.
      */
     this.Environment = new Environment();
 
     /**
-     * Defines the common configuration.
+     * Expose the user defined configuration.
      */
     this.Config = new Config(config);
 
     /**
-     * Create a new Store instance in order to interchange the data between
-     * the various Builders.
+     * Expose the state for each module to make them interchangeable.
      */
     this.Store = new Store();
 
     /**
-     * Create a new Builder instance that handles all processing tasks.
+     * Define the builder that will handle the common
      */
     this.Builder = new Builder(this.Argv, this.Environment, this.Config, this.Store);
   }
 
   /**
    * Initialize Plains.
-   *
-   * @param {*} config The custom configuration Object for Plains
    */
-  async init() {
-    this.Builder.run().then(() => {
-      console.log('Done');
-    });
+  async run() {
+    let { task } = this.Argv.args;
+
+    if (!task) {
+      error('No task has been defined.');
+    }
+
+    if (!this.Builder.hasTask(task)) {
+      error(`Task '${task}' is not defined.`);
+    }
+
+    console.log(task);
   }
 }
 

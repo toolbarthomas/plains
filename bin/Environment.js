@@ -21,7 +21,7 @@ class Environment {
      * Defines the custom Environment configuraiton from the optional dotenv
      * file.
      */
-    this.custom = {}
+    this.custom = {};
 
     /**
      * The defined Environment configuration to use.
