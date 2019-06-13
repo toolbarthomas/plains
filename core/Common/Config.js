@@ -1,10 +1,12 @@
+/* eslint no-else-return: "error" */
+
 const { load } = require('module-config-loader');
+
+const { warning } = require('../Utils/Logger');
 
 class Config {
   constructor(config) {
-    /**
-     * Store the default configuration values.
-     */
+    // Store the default configuration values.
     this.defaults = {
       src: './src',
       dist: './dist',
@@ -22,9 +24,7 @@ class Config {
      */
     this.inlineConfig = config instanceof Object ? config : {};
 
-    /**
-     * The actual configuration that will be used.
-     */
+    // The actual configuration that will be used.
     this.exports = {};
   }
 
@@ -32,21 +32,66 @@ class Config {
    * Defines the applications configuration.
    */
   define() {
+    // Return the cached configuration.
     if (this.config && this.config instanceof Object) {
       return this.config;
     }
 
-    this.config = Object.assign(this.externalConfig, this.inlineConfig);
-
-    // Define the default value for the missing configuration options.
-    Object.keys(this.defaults).forEach(name => {
-      if (!this.config[name] && this.defaults[name]) {
-        this.config[name] = this.defaults[name];
-      }
-    });
+    // Validates the custom configuration.
+    this.config = Config.validate(
+      this.defaults,
+      Object.assign(this.externalConfig, this.inlineConfig)
+    );
 
     // Cache the parsed configuration for the running process.
     return this.config;
+  }
+
+  /**
+   * Validates the custom configuration by comparing it with the default
+   * configuration in a recursive order.
+   *
+   * @param {*} defaults The iterated default value to use as reference.
+   * @param {*} config  The actual config to validate.
+   */
+  static validate(defaults, config) {
+    if (typeof defaults === typeof config) {
+      if (!(defaults instanceof Array) && defaults instanceof Object && config instanceof Object) {
+        const filteredConfig = {};
+        const mergedConfig = {};
+
+        /**
+         * Filter out the options that are undefined according to the default
+         * configuration.
+         */
+        Object.keys(config).forEach(name => {
+          if (defaults[name] && config[name]) {
+            filteredConfig[name] = config[name];
+          }
+        });
+
+        // Validates each entry within the current (sub)configuration Object.
+        Object.keys(defaults).forEach(name => {
+          mergedConfig[name] = Config.validate(defaults[name], filteredConfig[name]);
+        });
+
+        // Return the filtered and normalized configuration Object,
+        return mergedConfig;
+      } else if (defaults && config) {
+        // Return the current custom configuration value.
+        return config;
+      } else if (!config) {
+        // Return the default configuration if there is no custom configuration.
+        return defaults;
+      }
+
+      // Make sure that an actual configuration value is returned.
+      return defaults;
+    } else if (config) {
+      warning('The custom configuration is invalid. The default configuration will be used...');
+    }
+
+    return defaults;
   }
 }
 

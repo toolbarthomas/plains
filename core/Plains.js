@@ -1,3 +1,7 @@
+/**
+ * Implements the core functionality for Plains.
+ */
+
 const Argv = require('./Common/Argv');
 const Config = require('./Common/Config');
 
@@ -25,19 +29,22 @@ class Plains {
   }
 
   /**
-   * Prepare Plains.
+   * Exposes the mandatory environment & application configuration before
+   * initializing the new Plains Instance.
    */
   boot() {
-    // Defines the processed command line interface arguments.
+    // Expose the processed command line interface arguments.
     this.args = this.common.Argv.define() || {};
 
-    // Defines the actual application configuration.
+    // Expose the actual application configuration.
     this.config = this.common.Config.define();
 
-    // Defines the store for assigning the application state.
-    this.services.Store.create('common');
+    const { defaultStore } = this.config.store || 'name';
 
-    console.log(this.services.Contractor);
+    console.log(this.config);
+
+    // Define a global store to interchange the application states.
+    this.services.Store.create(defaultStore);
   }
 
   /**
