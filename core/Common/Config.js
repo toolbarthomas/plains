@@ -6,10 +6,17 @@ const { warning } = require('../Utils/Logger');
 
 class Config {
   constructor(config) {
-    // Store the default configuration values.
+    /**
+     * Defines the default configuration Object for Plains.
+     * The configuration will be used if it has not been adjusted by the custom
+     * configuration.
+     */
     this.defaults = {
-      src: './src',
-      dist: './dist',
+      src: './src', // Defines the source path for Plains.
+      dist: './dist', // Defines the Plains destination path.
+      store: {
+        defaultStore: 'app', // Defines an initial store for Plains.
+      },
     };
 
     /**
@@ -53,8 +60,9 @@ class Config {
    *
    * @param {*} defaults The iterated default value to use as reference.
    * @param {*} config  The actual config to validate.
+   * @param {String} option The name of the configuration option.
    */
-  static validate(defaults, config) {
+  static validate(defaults, config, option) {
     if (typeof defaults === typeof config) {
       if (!(defaults instanceof Array) && defaults instanceof Object && config instanceof Object) {
         const filteredConfig = {};
@@ -72,7 +80,7 @@ class Config {
 
         // Validates each entry within the current (sub)configuration Object.
         Object.keys(defaults).forEach(name => {
-          mergedConfig[name] = Config.validate(defaults[name], filteredConfig[name]);
+          mergedConfig[name] = Config.validate(defaults[name], filteredConfig[name], name);
         });
 
         // Return the filtered and normalized configuration Object,
@@ -88,7 +96,11 @@ class Config {
       // Make sure that an actual configuration value is returned.
       return defaults;
     } else if (config) {
-      warning('The custom configuration is invalid. The default configuration will be used...');
+      if (option) {
+        warning(
+          `Option: ${option} does not match the configuration schema and will use the default value.`
+        );
+      }
     }
 
     return defaults;
