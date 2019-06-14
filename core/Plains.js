@@ -39,12 +39,11 @@ class Plains {
     // Expose the actual application configuration.
     this.config = this.common.Config.define();
 
-    const { defaultStore } = this.config.store || 'name';
-
-    console.log(this.config);
-
     // Define a global store to interchange the application states.
-    this.services.Store.create(defaultStore);
+    const { defaultStore } = this.config.store || 'app';
+    if (defaultStore) {
+      this.services.Store.create(defaultStore);
+    }
   }
 
   /**
@@ -53,7 +52,11 @@ class Plains {
   run() {
     const { task } = this.args;
 
-    console.log(this.services.Contractor);
+    if (task) {
+      this.services.Contractor.publish(task);
+    } else {
+      error(`No task has been defined!`);
+    }
   }
 }
 
