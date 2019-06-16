@@ -1,4 +1,4 @@
-const { error, info, warning, success } = require('../Utils/Logger');
+const { error, info, log, success, warning } = require('../Utils/Logger');
 
 /**
  * Observer class that handles the task management for Plains.
@@ -17,7 +17,7 @@ class Contractor {
    */
   subscribe(name, handler, async) {
     if (!this.tasks[name] && typeof handler === 'function') {
-      info(`Subscribing task: '${name}'...`);
+      log(`Subscribing task: '${name}'...`);
 
       //
       /**
@@ -78,21 +78,27 @@ class Contractor {
 
     if (Array.isArray(queue)) {
       // Make sure that all task run in a synchronous order.
-      queue.reduce(
+      await queue.reduce(
         (previousTask, task) =>
           previousTask.then(async () => {
             if (!this.tasks[task]) {
               error(`Task: '${task}' does not exists!`);
             }
 
+            info(`Running: '${task}'`);
+
             if (this.tasks[task].options && this.tasks[task].options.async) {
               await this.tasks[task].fn(args);
             } else {
               this.tasks[task].fn(args);
             }
+
+            success(`Finished: '${task}'`);
           }),
         Promise.resolve()
       );
+
+      success('Done');
     }
   }
 

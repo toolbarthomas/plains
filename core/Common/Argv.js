@@ -10,7 +10,7 @@ class Argv {
       task: 'default',
     };
 
-    this.args = {};
+    this.args = this.define();
   }
 
   /**

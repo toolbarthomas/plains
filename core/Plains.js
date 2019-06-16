@@ -7,6 +7,9 @@ const Config = require('./Common/Config');
 
 const Contractor = require('./Services/Contractor');
 const Store = require('./Services/Store');
+
+const Cleaner = require('./Workers/Cleaner');
+
 class Plains {
   constructor(options) {
     const { config } = options instanceof Object ? options : {};
@@ -20,11 +23,18 @@ class Plains {
     };
 
     /**
-     * Assigns the default Plains services.
+     * Exposes the core Plains services in order to assing worker instance.
      */
     this.services = {
-      Contractor: new Contractor(),
+      Contractor: new Contractor(this.services),
       Store: new Store(),
+    };
+
+    /**
+     * Assigns the core workers.
+     */
+    this.workers = {
+      Cleaner: new Cleaner(this.services),
     };
   }
 
@@ -54,8 +64,6 @@ class Plains {
 
     if (task) {
       this.services.Contractor.publish(task);
-    } else {
-      error(`No task has been defined!`);
     }
   }
 }

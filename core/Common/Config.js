@@ -2,8 +2,6 @@
 
 const { load } = require('module-config-loader');
 
-const { warning } = require('../Utils/Logger');
-
 class Config {
   constructor(config) {
     /**
@@ -97,9 +95,7 @@ class Config {
       return defaults;
     } else if (config) {
       if (option) {
-        warning(
-          `Option: ${option} does not match the configuration schema and will use the default value.`
-        );
+        throw Error(`Option: ${option} does not match the configuration schema`);
       }
     }
 

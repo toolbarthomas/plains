@@ -10,7 +10,7 @@ class Logger {
    * @param {String|Array} message The message to display.
    */
   error(message) {
-    Logger.outputMessages(message, 'error', 'error');
+    Logger.outputMessages(message, 'error');
 
     process.exit(1);
   }
@@ -21,7 +21,7 @@ class Logger {
    * @param {String|Array} message The message to display.
    */
   warning(message) {
-    Logger.outputMessages(message, 'warn', 'warning');
+    Logger.outputMessages(message, 'warning');
   }
 
   /**
@@ -30,7 +30,7 @@ class Logger {
    * @param {String|Array} message The message to display.
    */
   success(message) {
-    Logger.outputMessages(message, 'log', 'success');
+    Logger.outputMessages(message, 'success');
   }
 
   /**
@@ -39,7 +39,16 @@ class Logger {
    * @param {String|Array} message The message to display.
    */
   info(message) {
-    Logger.outputMessages(message, 'info', 'info');
+    Logger.outputMessages(message, 'info');
+  }
+
+  /**
+   * Displays log output when verbose logging is enabled.
+   *
+   * @param {String|Array} message The message to display.
+   */
+  log(message) {
+    Logger.outputMessages(message, 'log');
   }
 
   /**
@@ -47,19 +56,23 @@ class Logger {
    * Ouput a new console method for each message entry.
    *
    * @param {String|Array} message The actual message to output
-   * @param {String} method Defines the method to use for the console Object.
+   * @param {String} type Defines the message type to use for the console Object.
    */
-  static outputMessages(message, method) {
-    const styles = Logger.getMessageStyle(method);
+  static outputMessages(message, type) {
+    const properties = Logger.getMessageProperties(type);
 
     if (message.constructor === Array && message instanceof Array) {
       message.forEach(m => {
         // eslint-disable-next-line no-console
-        console[method](chalk[styles.color](symbols[styles.symbol], m));
+        console[properties.method](
+          chalk[properties.color](properties.symbol ? symbols[properties.symbol] : ' ', m)
+        );
       });
     } else {
       // eslint-disable-next-line no-console
-      console[method](chalk[styles.color](symbols[styles.symbol], message));
+      console[properties.method](
+        chalk[properties.color](properties.symbol ? symbols[properties.symbol] : ' ', message)
+      );
     }
   }
 
@@ -70,29 +83,38 @@ class Logger {
    *
    * @return {Object} The styles object to return.
    */
-  static getMessageStyle(method) {
-    const styles = {};
+  static getMessageProperties(method) {
+    const properties = {};
 
     switch (method) {
       case 'error':
-        styles.color = 'red';
-        styles.symbol = 'error';
+        properties.method = 'error';
+        properties.color = 'red';
+        properties.symbol = 'error';
         break;
-      case 'warn':
-        styles.color = 'yellow';
-        styles.symbol = 'warning';
+      case 'warning':
+        properties.method = 'warn';
+        properties.color = 'yellow';
+        properties.symbol = 'warning';
         break;
-      case 'log':
-        styles.color = 'green';
-        styles.symbol = 'success';
+      case 'success':
+        properties.method = 'log';
+        properties.color = 'green';
+        properties.symbol = 'success';
+        break;
+      case 'info':
+        properties.method = 'info';
+        properties.color = 'blue';
+        properties.symbol = 'info';
         break;
       default:
-        styles.color = 'blue';
-        styles.symbol = 'info';
+        properties.method = 'log';
+        properties.color = 'cyan';
+        properties.symbol = false;
         break;
     }
 
-    return styles;
+    return properties;
   }
 }
 
