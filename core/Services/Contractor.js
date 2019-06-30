@@ -17,7 +17,7 @@ class Contractor {
    */
   subscribe(name, handler, async) {
     if (!this.tasks[name] && typeof handler === 'function') {
-      log(`Subscribing task: '${name}'...`);
+      log(`Subscribing task - ${name}`);
 
       //
       /**
@@ -82,10 +82,10 @@ class Contractor {
         (previousTask, task) =>
           previousTask.then(async () => {
             if (!this.tasks[task]) {
-              error(`Task: '${task}' does not exists!`);
+              error(`Task: '${task}' does not exists.`);
             }
 
-            info(`Running: '${task}'`);
+            info(`Starting task - ${task}`);
 
             if (this.tasks[task].options && this.tasks[task].options.async) {
               await this.tasks[task].fn(args);
@@ -93,12 +93,12 @@ class Contractor {
               this.tasks[task].fn(args);
             }
 
-            success(`Finished: '${task}'`);
+            success(`Finished - ${task}`);
           }),
         Promise.resolve()
       );
 
-      success('Done');
+      success('Done!');
     }
   }
 
@@ -110,7 +110,7 @@ class Contractor {
    * @param {Object} args Optional arguments for the actual resolved Promise.
    */
   resolve(name, ...args) {
-    if (!this.tasks[name].resolve) {
+    if (!this.tasks[name] || this.tasks[name].resolve) {
       warning(`Task '${name}' is synchronous and won't be resolved.`);
     } else {
       this.tasks[name].resolve(...args);
