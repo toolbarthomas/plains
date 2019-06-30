@@ -1,4 +1,4 @@
-const { warning } = require('../Utils/Logger');
+const { warning, log } = require('../Utils/Logger');
 
 class Store {
   constructor() {
@@ -20,6 +20,8 @@ class Store {
 
       // Create the new Store witn the defined name.
       this.buckets.set(name, new Map([state, instance]));
+
+      log(`Store created - ${name}`);
     }
   }
 
