@@ -2,7 +2,7 @@
 
 const { load } = require('module-config-loader');
 
-class Config {
+class ConfigLoader {
   constructor(config) {
     /**
      * Defines the default configuration Object for Plains.
@@ -30,20 +30,15 @@ class Config {
     this.inlineConfig = config instanceof Object ? config : {};
 
     // The actual configuration that will be used.
-    this.exports = {};
+    this.config = {};
   }
 
   /**
    * Defines the applications configuration.
    */
   define() {
-    // Return the cached configuration.
-    if (this.config && this.config instanceof Object) {
-      return this.config;
-    }
-
     // Validates the custom configuration.
-    this.config = Config.validate(
+    this.config = ConfigLoader.validate(
       this.defaults,
       Object.assign(this.externalConfig, this.inlineConfig)
     );
@@ -78,7 +73,7 @@ class Config {
 
         // Validates each entry within the current (sub)configuration Object.
         Object.keys(defaults).forEach(name => {
-          mergedConfig[name] = Config.validate(defaults[name], filteredConfig[name], name);
+          mergedConfig[name] = ConfigLoader.validate(defaults[name], filteredConfig[name], name);
         });
 
         // Return the filtered and normalized configuration Object,
@@ -103,4 +98,4 @@ class Config {
   }
 }
 
-module.exports = Config;
+module.exports = ConfigLoader;
