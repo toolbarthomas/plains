@@ -110,7 +110,7 @@ class Contractor {
    * @param {Object} args Optional arguments for the actual resolved Promise.
    */
   resolve(name, ...args) {
-    if (!this.tasks[name] || this.tasks[name].resolve) {
+    if (!this.tasks[name] || !this.tasks[name].resolve) {
       warning(`Task '${name}' is synchronous and won't be resolved.`);
     } else {
       this.tasks[name].resolve(...args);
