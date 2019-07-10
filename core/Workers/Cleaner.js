@@ -11,43 +11,27 @@ class Cleaner {
   }
 
   init() {
-    this.services.Filesystem.createStack('sass');
+    // Source each stack from the Filesystem.
+    const entries = this.services.Filesystem.source();
 
-    this.services.Filesystem.insertEntry('sass', './index.scss');
-    this.services.Filesystem.insertEntry('sass', './foo.scss');
+    // Don't run the Cleaner if there are no sources defined.
+    if (!entries.length) {
+      this.services.Contractor.resolve(this.taskName);
+    }
 
-    const stacks = this.services.Filesystem.source();
-
-    let stackCompleted = 0;
-
-    stacks.forEach((stack, name) => {
+    // Remove each file from stack.
+    entries.forEach((entry, name) => {
+      // Use the queue to resolve the actual Cleaner after all entries have been removed.
       let queue = 0;
 
-      console.log('Stack');
+      rimraf(entry, () => {
+        // Increase the current queue after the current entry has been removed.
+        queue += 1;
 
-      stack.forEach(entry => {
-        rimraf(entry, () => {
-          queue += 1;
-
-          if (queue >= stack.length) {
-            stackCompleted += 1;
-          }
-
-          if (stackCompleted >= stacks.size) {
-            this.services.Contractor.resolve(this.taskName);
-          }
-        });
-        // rimraf(entry, () => {
-        //   queue += 1;
-
-        //   if (queue >= stack.length) {
-        //     stackCompleted += 1;
-        //   }
-
-        //   if (stackCompleted >= stacks.length) {
-        //     resolve();
-        //   }
-        // });
+        // Resolve the subsribed Promise when all entries have been removed.
+        if (queue >= entries.length) {
+          this.services.Contractor.resolve(this.taskName);
+        }
       });
     });
   }
