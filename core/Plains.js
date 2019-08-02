@@ -49,9 +49,7 @@ class Plains {
     // Expose the processed command line interface arguments.
     this.args = this.common.Argv.define();
 
-    /**
-     * Define the actual application configuration.
-     */
+    // Define the actual application configuration.
     this.config = this.common.ConfigLoader.define();
 
     // Throw an Exception if Plains configuration isn't defined.
@@ -59,16 +57,8 @@ class Plains {
       error('Unable to load the configuration for Plains.');
     }
 
-    /**
-     * Hook the application configuration.
-     */
-    // this.services.Operator.use(this.config);
-
-    // Create a default Store to define core states for the application.
-    const { defaultStore } = this.config.store || 'app';
-    if (defaultStore) {
-      this.services.Store.create(defaultStore);
-    }
+    // Expose the defined configuration for the actual application.
+    this.services.Store.create('config', this.config);
 
     // Mount the common worker for the application so it can be initiated.
     Object.keys(this.workers).forEach(name => {

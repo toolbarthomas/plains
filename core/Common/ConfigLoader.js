@@ -12,9 +12,6 @@ class ConfigLoader {
     this.defaults = {
       src: './src', // Defines the source path for Plains.
       dist: './dist', // Defines the Plains destination path.
-      store: {
-        defaultStore: 'app', // Defines an initial store for Plains.
-      },
     };
 
     /**

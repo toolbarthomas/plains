@@ -9,19 +9,22 @@ class Store {
    * Creates a new Map instance to use as new Store.
    *
    * @param {String} name The name of the store to create.
+   * @param {Object} data The optional data object that is available after
+   * creating a new store
    */
-  create(name) {
+  create(name, data) {
     if (this.buckets instanceof Map && !this.buckets.get(name)) {
       // Use the state Map to store the commited data into.
       const state = ['state', new Map()];
 
-      // Collection of instances to emit events from after a mutation occurs.
-      const instance = ['instance', new Map()];
-
       // Create the new Store witn the defined name.
-      this.buckets.set(name, new Map([state, instance]));
+      this.buckets.set(name, new Map([state]));
 
       log(`Store created - ${name}`);
+
+      if (data instanceof Object) {
+        this.commit(name, data);
+      }
     }
   }
 
@@ -65,6 +68,8 @@ class Store {
           .get('state')
           .set(entry, data[entry]);
       });
+
+      log(`Store updated - ${name}`);
     } else {
       warning(`Unable to commit the data within ${name}, the given data is not a valid Object`);
     }
@@ -117,7 +122,6 @@ class Store {
 
     if (store) {
       this.buckets.get(name).delete('state');
-      this.buckets.get(name).delete('instance');
     } else {
       warning(`Unable to prune store '${name}', since it doesn't exist`);
     }
