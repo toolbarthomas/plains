@@ -20,7 +20,7 @@ class Store {
       // Create the new Store witn the defined name.
       this.buckets.set(name, new Map([state]));
 
-      log(`Store created - ${name}`);
+      log(`Store created - Created bucket: ${name}`);
 
       if (data instanceof Object) {
         this.commit(name, data);
@@ -48,8 +48,9 @@ class Store {
    *
    * @param {String} name The actual Bucket to commit the data to.
    * @param {Object} data The data object to commit within the Bucket.
+   * @param {Boolean} silent Don't ouput any logs while commiting.
    */
-  commit(name, data) {
+  commit(name, data, silent) {
     let store = this.use(name);
 
     // Prepare a new Store if no has been defined.
@@ -69,7 +70,9 @@ class Store {
           .set(entry, data[entry]);
       });
 
-      log(`Store updated - ${name}`);
+      if (!silent) {
+        log(`Store updated - Committed to bucket: ${name}`);
+      }
     } else {
       warning(`Unable to commit the data within ${name}, the given data is not a valid Object`);
     }
@@ -113,15 +116,23 @@ class Store {
   }
 
   /**
-   * Clears the selected bucket from the Store.
+   * Removes the defined bucket or a specific entry from the Store.
    *
-   * @param {String} name The name of the store to prune.
+   * @param {String} name The name of the bucket to prune.
+   * @param {String} entry Removes only the defined entry from the actual bucket.
    */
-  prune(name) {
+  prune(name, entry) {
     const store = this.use(name);
 
     if (store) {
-      this.buckets.get(name).delete('state');
+      if (typeof entry === 'string') {
+        this.buckets.get(name).get('state').delete(entry);
+
+        log(`Store updated - Removed '${entry}' from bucket: ${name}`);
+      } else {
+        log(`Bucket remove: ${name}`)
+        this.buckets.get(name).delete('state');
+      }
     } else {
       warning(`Unable to prune store '${name}', since it doesn't exist`);
     }

@@ -58,7 +58,7 @@ class Plains {
     }
 
     // Expose the defined configuration for the actual application.
-    this.services.Store.create('config', this.config);
+    this.services.Store.create('plains', this.config);
 
     // Mount the common worker for the application so it can be initiated.
     Object.keys(this.workers).forEach(name => {
