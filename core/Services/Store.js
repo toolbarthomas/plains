@@ -1,4 +1,4 @@
-const { warning, log } = require('../Utils/Logger');
+const { error, warning, log } = require('../Utils/Logger');
 
 class Store {
   constructor() {
@@ -76,6 +76,65 @@ class Store {
     } else {
       warning(`Unable to commit the data within ${name}, the given data is not a valid Object`);
     }
+  }
+
+  /**
+   * Merges the defined data to the specified entry of the selected Bucket.
+   * This should be used to update the defined entry from a bucket.
+   *
+   * @param {String} name The name of the bucket that will be updated.
+   * @param {String} key Defines the key that will be updated with the
+   * mergable data.
+   * @param {...Object} data Defines the object that will be merged in the bucket.
+   *
+   * @returns {Object} Returns a single object that has been merged in the bucket.
+   */
+  merge(name, entry, ...data) {
+    const initialCommit = this.get(name);
+
+    if (!initialCommit) {
+      error(`Unable to merge to ${name}, the bucket does not exist`);
+    }
+
+    // Prepare the new commit if the intialCommit does not has any values to merge.
+    if (
+      !initialCommit[entry] &&
+      data[0] instanceof Array &&
+      initialCommit[entry] instanceof Array
+    ) {
+      initialCommit[entry] = [];
+    } else if (
+      !initialCommit[entry] &&
+      data[0] instanceof Object &&
+      initialCommit[entry] instanceof Object
+    ) {
+      initialCommit[entry] = {};
+    } else if (initialCommit[entry].constructor !== data.constructor) {
+      error(`Unable to merge to ${name}, you should define the data as an Object or an Array,`);
+    }
+
+    data.forEach(commit => {
+      // Abort the current iteration if the current commit is not the same
+      // instance as the intialCommit.
+      if (commit.constructor !== initialCommit[entry].constructor) {
+        return;
+      }
+
+      if (commit instanceof Array) {
+        // Only push new values to the array.
+        initialCommit[entry] = commit
+          .filter(current => initialCommit[entry].indexOf(current) < 0)
+          .concat(initialCommit[entry]);
+      } else if (commit instanceof Object) {
+        initialCommit[entry] = Object.assign(initialCommit[entry], commit);
+      }
+    });
+
+    // Commit the merged data.
+    this.commit(name, initialCommit, true);
+
+    // Return the finalized data object.
+    return initialCommit;
   }
 
   /**
