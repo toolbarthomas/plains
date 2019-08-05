@@ -20,7 +20,7 @@ class Cleaner {
     }
 
     // Remove each file from stack.
-    entries.forEach((entry, name) => {
+    entries.forEach(entry => {
       // Use the queue to resolve the actual Cleaner after all entries have been removed.
       let queue = 0;
 
