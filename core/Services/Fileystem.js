@@ -87,7 +87,7 @@ class Filesystem {
     let resolvedPaths = [];
     entryPaths.forEach(path => {
       if (path.indexOf('*') >= 0) {
-        resolvedPaths = sync(path).map(globPath => resolve(globPath));
+        resolvedPaths = resolvedPaths.concat(sync(path).map(globPath => resolve(globPath)));
       } else {
         resolvedPaths = resolvedPaths.concat(resolve(path));
       }
