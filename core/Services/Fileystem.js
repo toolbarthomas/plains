@@ -1,7 +1,8 @@
-const { existsSync } = require('fs');
+const { existsSync, writeFileSync } = require('fs');
 const { sync } = require('glob');
-const { resolve } = require('path');
-const { error } = require('../Utils/Logger');
+const { dirname, extname, parse, relative, resolve, sep } = require('path');
+const mkdirp = require('mkdirp');
+const { error, log } = require('../Utils/Logger');
 
 /**
  * Utitlty to define and retreive the entry paths for the actual workers
@@ -124,10 +125,19 @@ class Filesystem {
     // Resolve the new entries before it will be inserted within the
     let resolvedPaths = [];
     entryPaths.forEach(path => {
+      let initialPath = path;
+      const relativePath = relative(process.cwd(), path);
+      const relativeSrc = relative(process.cwd(), this.src);
+
+      // Remove the defined root path if it exists within the given entry.
+      if (relativePath.indexOf(relativeSrc) === 0) {
+        initialPath = relativePath.replace(relativeSrc, '').replace(sep, '');
+      }
+
       if (path.indexOf('*') >= 0) {
-        resolvedPaths = resolvedPaths.concat(sync(path).map(globPath => resolve(globPath)));
+        resolvedPaths = resolvedPaths.concat(sync(resolve(this.src, initialPath)).map(globPath => resolve(globPath)));
       } else {
-        resolvedPaths = resolvedPaths.concat(resolve(path));
+        resolvedPaths = resolvedPaths.concat(resolve(this.src, initialPath));
       }
     });
 
@@ -149,6 +159,39 @@ class Filesystem {
 
     // Return false if the defined stack has not been updated.
     return false;
+  }
+
+  /**
+   * Writes the defined data to the common destination directory.
+   * The destination directory should be defined when creating a new instance of
+   * the Filesystem.
+   *
+   * @param {String} entry The path of the actual data source.
+   * @param {Buffer} data The data source as Buffer.
+   * @param {Object} options The options
+   */
+  write(entry, data, options) {
+    if (!this.dist) {
+      error(`Unable to write, there is no destination defined for the Filesystem service`);
+    }
+
+    let relativeEntry = relative(this.src, entry);
+
+    if (options && options.extname) {
+      relativeEntry = relativeEntry.replace(extname(relativeEntry).replace('.', ''), options.extname);
+    }
+
+    const destination = resolve(this.dist, relativeEntry);
+
+    mkdirp(dirname(destination), (err) => {
+      if (err) {
+        error(err);
+      }
+
+      writeFileSync(destination, data);
+    });
+
+    log(`Resource created: ${destination}`);
   }
 }
 
