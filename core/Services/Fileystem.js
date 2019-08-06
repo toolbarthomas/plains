@@ -1,6 +1,7 @@
 const { existsSync } = require('fs');
 const { sync } = require('glob');
 const { resolve } = require('path');
+const { error } = require('../Utils/Logger');
 
 /**
  * Utitlty to define and retreive the entry paths for the actual workers
@@ -8,6 +9,43 @@ const { resolve } = require('path');
 class Filesystem {
   constructor() {
     this.stacks = new Map();
+    this.src = false;
+    this.dist = false;
+  }
+
+  /**
+   * Defines the root path for the FileSystem that will be used as working directory
+   * in order to resolve entry files.
+   * An exception will be thrown if the root path does not exists.
+   *
+   * @param {String} path The actual root path that will be used.
+   */
+  defineRoot(path) {
+    if (!existsSync(path)) {
+      error(`The given root path does not exists for: ${path}`);
+    }
+
+    this.src = resolve(path);
+  }
+
+  /**
+   * Defines the destination where the files will be written by the Filesystem.
+   */
+  defineDestination(path) {
+    this.dist = resolve(path);
+  }
+
+  /**
+   * Returns the root path where all entry files should be stored.
+   *
+   * @returns {String} Returns the root path of the application.
+   */
+  getRoot() {
+    if (!this.src) {
+      error(`No root path has been defined for the Filesystem.`);
+    }
+
+    return this.src;
   }
 
   /**

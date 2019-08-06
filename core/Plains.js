@@ -62,6 +62,12 @@ class Plains {
     // Expose the defined configuration for the actual application.
     this.services.Store.create('plains', this.config);
 
+    // Defines a root path for the application workers to process the application assets.
+    this.services.Filesystem.defineRoot(this.config.src);
+
+    // Defines the destination path where the processed entries will be written to.
+    this.services.Filesystem.defineDestination(this.config.dist);
+
     // Mount the common worker for the application so it can be initiated.
     Object.keys(this.workers).forEach(name => {
       const worker = this.workers[name] || false;
@@ -74,7 +80,7 @@ class Plains {
         error(`No mount method has been defined for: '${name}'.`);
       }
 
-      // Subscribes the taskname for the current worker.
+      // Exposes each worker logic into the Plains services.
       worker.mount();
     });
   }
