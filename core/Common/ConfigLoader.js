@@ -12,6 +12,7 @@ class ConfigLoader {
     this.defaults = {
       src: './src', // Defines the source path for Plains.
       dist: './dist', // Defines the Plains destination path.
+      workers: {},
     };
 
     /**
@@ -53,7 +54,7 @@ class ConfigLoader {
    * @param {String} option The name of the configuration option.
    */
   static validate(defaults, config, option) {
-    if (typeof defaults === typeof config) {
+    if (defaults && config && defaults.constructor === config.constructor) {
       if (!(defaults instanceof Array) && defaults instanceof Object && config instanceof Object) {
         const filteredConfig = {};
         const mergedConfig = {};
@@ -63,7 +64,7 @@ class ConfigLoader {
          * configuration.
          */
         Object.keys(config).forEach(name => {
-          if (defaults[name] && config[name]) {
+          if (name != 'workers' || defaults[name] && config[name]) {
             filteredConfig[name] = config[name];
           }
         });

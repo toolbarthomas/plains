@@ -51,7 +51,7 @@ class Plains {
     // Expose the processed command line interface arguments.
     this.args = this.common.Argv.define();
 
-    // Define the actual application configuration.
+    // Expose the application configuration in the Plains instance.
     this.config = this.common.ConfigLoader.define();
 
     // Throw an Exception if Plains configuration isn't defined.
