@@ -36,7 +36,7 @@ class ConfigLoader {
    */
   define() {
     // Validates the custom configuration.
-    this.config = ConfigLoader.validate(
+    this.config = this.validate(
       this.defaults,
       Object.assign(this.externalConfig, this.inlineConfig)
     );
@@ -53,7 +53,7 @@ class ConfigLoader {
    * @param {*} config  The actual config to validate.
    * @param {String} option The name of the configuration option.
    */
-  static validate(defaults, config, option) {
+  validate(defaults, config, option) {
     if (defaults && config && defaults.constructor === config.constructor) {
       if (!(defaults instanceof Array) && defaults instanceof Object && config instanceof Object) {
         const filteredConfig = {};
@@ -64,14 +64,21 @@ class ConfigLoader {
          * configuration.
          */
         Object.keys(config).forEach(name => {
-          if (name != 'workers' || defaults[name] && config[name]) {
+          if (name === 'workers' || (defaults[name] && config[name])) {
             filteredConfig[name] = config[name];
           }
         });
 
+
         // Validates each entry within the current (sub)configuration Object.
         Object.keys(defaults).forEach(name => {
-          mergedConfig[name] = ConfigLoader.validate(defaults[name], filteredConfig[name], name);
+          // Ignore worker configuration in order to support external workers.
+          if (name === 'workers') {
+            mergedConfig[name] = Object.assign(this.defaults[name], config[name]);
+            // mergedConfig[name][option] = config;
+          } else {
+            mergedConfig[name] = this.validate(defaults[name], filteredConfig[name], name);
+          }
         });
 
         // Return the filtered and normalized configuration Object,
