@@ -6,28 +6,26 @@ class SassCompiler {
   constructor(services) {
     this.services = services;
     this.taskName = 'sass';
-    this.queue = 0;
 
+    // @TODO use default object for worker to validate the actual worker configuration.
     this.defaults = {
       entry: []
     }
   }
 
   mount() {
-    this.config = Object.assign(this.defaults, this.services.Store.get('plains', 'sassCompiler'));
-
-    console.log(this.config);
-
-    // console.log(this.services.Store.get('plains', 'sassCompiler') || this.defaults)
-
+    // Get the specific sassCompiler configuraiton that has been defined
+    // by the ConfigManager service.
+    this.config = this.services.Store.get('plains', 'workers')['sassCompiler'] || {};
 
     // Create a new Filesystem stack to define the sass entry files.
     this.services.Filesystem.createStack('sassCompiler');
 
-    // Defines the actual Sass entry files.
+    // Defines the actual Sass entry files that are defined within the configuration.
     // @TODO include support for config entries
     this.services.Filesystem.insertEntry('sassCompiler', this.config.entry);
 
+    // Expose the SassCompiler worker task.
     this.services.Contractor.subscribe(this.taskName, this.init.bind(this), true);
   }
 
@@ -35,8 +33,6 @@ class SassCompiler {
    * Run the Sasscompiler!
    */
   async init() {
-    this.queue = 0;
-
     // Get the defined entry file.
     // @todo check if there is an entry file defined within the wachter queue.
     const entries = this.services.Filesystem.source('sassCompiler');

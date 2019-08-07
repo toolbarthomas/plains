@@ -15,14 +15,12 @@ const SassCompiler = require('./Workers/SassCompiler');
  */
 class Plains {
   constructor(options) {
-    const { config } = options instanceof Object ? options : {};
-
     /**
      * Stores the common application Classes.
      */
     this.common = {
       Argv: new Argv(),
-      ConfigLoader: new ConfigLoader(config),
+      ConfigLoader: new ConfigLoader(options || {}),
     };
 
     /**
