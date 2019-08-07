@@ -1,4 +1,4 @@
-const { renderSync } = require('node-sass');
+const { render } = require('node-sass');
 const globImporter = require('node-sass-glob-importer');
 const { info } = require('../Utils/Logger');
 
@@ -6,16 +6,21 @@ class SassCompiler {
   constructor(services) {
     this.services = services;
     this.taskName = 'sass';
+    this.queue = 0;
 
-    this.config = {
-      entry: [
-        './src/base/stylesheets/*.scss',
-        'modules/*/stylesheets/*.scss',
-      ],
-    };
+    this.defaults = {
+      entry: []
+    }
   }
 
   mount() {
+    this.config = Object.assign(this.defaults, this.services.Store.get('plains', 'sassCompiler'));
+
+    console.log(this.config);
+
+    // console.log(this.services.Store.get('plains', 'sassCompiler') || this.defaults)
+
+
     // Create a new Filesystem stack to define the sass entry files.
     this.services.Filesystem.createStack('sassCompiler');
 
@@ -29,12 +34,22 @@ class SassCompiler {
   /**
    * Run the Sasscompiler!
    */
-  init() {
+  async init() {
+    this.queue = 0;
+
+    // Get the defined entry file.
+    // @todo check if there is an entry file defined within the wachter queue.
     const entries = this.services.Filesystem.source('sassCompiler');
 
-    entries.forEach(entry => {
-      this.processEntry(entry);
+    // Process each entry in parallel order.
+    const compiler = entries.map(async (entry) => {
+      await this.processEntry(entry);
     });
+
+    // Wait for each processes.
+    await Promise.all(compiler);
+
+    this.services.Contractor.resolve(this.taskName);
   }
 
   /**
@@ -43,15 +58,21 @@ class SassCompiler {
    * @param {String} entry The path of the current entry that will be processed.
    */
   processEntry(entry) {
-    info(`Compiling entry: ${entry}`);
+    return new Promise(cb => {
+      info(`Compiling entry: ${entry}`);
 
-    const chunk = renderSync({
-      file: entry,
-    });
+      render({
+        file: entry,
+      }, async (error, chunk) => {
 
-    // Write the processed entry to the common Filesystem destination.
-    this.services.Filesystem.write(chunk.stats.entry, chunk.css, {
-      extname: 'css'
+        await this.services.Filesystem.write(entry, chunk.css, {
+          extname: 'css'
+        });
+
+        // Resolve the Promise for the current entry after it has been written
+        // to the filesystem.
+        cb();
+      });
     });
   }
 }
