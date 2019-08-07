@@ -13,13 +13,12 @@ class Contractor {
    *
    * @param {String} name The name of the actual task.
    * @param {Function} handler The function handler that will be used.
-   * @param {Boolean} async Creates a new Promise object for the given .
+   * @param {Boolean} async Creates a new Promise object for the given handler.
    */
   subscribe(name, handler, async) {
     if (!this.tasks[name] && typeof handler === 'function') {
-      log(`Subscribing task - ${name}`);
+      log(`Subscribing task: ${name}`);
 
-      //
       /**
        * Define a new Object for the given task where the actual command where
        * the actual command and parameters will be defined.,
@@ -85,7 +84,7 @@ class Contractor {
               error(`Task: '${task}' does not exists.`);
             }
 
-            info(`Starting task - ${task}`);
+            info(`Starting task: ${task}`);
 
             if (this.tasks[task].options && this.tasks[task].options.async) {
               await this.tasks[task].fn(args);
@@ -93,7 +92,7 @@ class Contractor {
               this.tasks[task].fn(args);
             }
 
-            success(`Finished - ${task}`);
+            success(`Finished: ${task}`);
           }),
         Promise.resolve()
       );
