@@ -1,4 +1,4 @@
-const { existsSync, writeFileSync } = require('fs');
+const { existsSync, writeFile } = require('fs');
 const { sync } = require('glob');
 const { dirname, extname, parse, relative, resolve, sep } = require('path');
 const mkdirp = require('mkdirp');
@@ -134,6 +134,7 @@ class Filesystem {
         initialPath = relativePath.replace(relativeSrc, '').replace(sep, '');
       }
 
+      // Glob the current entry if it has a glob pattern.
       if (path.indexOf('*') >= 0) {
         resolvedPaths = resolvedPaths.concat(sync(resolve(this.src, initialPath)).map(globPath => resolve(globPath)));
       } else {
@@ -177,21 +178,30 @@ class Filesystem {
 
     let relativeEntry = relative(this.src, entry);
 
+
     if (options && options.extname) {
       relativeEntry = relativeEntry.replace(extname(relativeEntry).replace('.', ''), options.extname);
     }
 
     const destination = resolve(this.dist, relativeEntry);
 
-    mkdirp(dirname(destination), (err) => {
-      if (err) {
-        error(err);
-      }
+    return new Promise(cb => {
+      mkdirp(dirname(destination), (err) => {
+        if (err) {
+          error(err);
+        }
 
-      writeFileSync(destination, data);
+        writeFile(destination, data, (err) => {
+          if (err) {
+            error(err);
+          }
+
+          log(`Resource created from entry: ${destination}`);
+
+          cb();
+        });
+      });
     });
-
-    log(`Resource created: ${destination}`);
   }
 }
 
