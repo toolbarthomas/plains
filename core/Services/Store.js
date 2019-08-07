@@ -149,12 +149,12 @@ class Store {
     const store = this.use(name);
 
     if (!store || !(store instanceof Map)) {
-      return undefined;
+      return {};
     }
 
     // Return the defined value of the selected Store if the given key exists.
     if (entry && store.get('state') instanceof Map) {
-      return store.get('state').get(entry) || undefined;
+      return store.get('state').get(entry) || {};
     }
 
     const state = {};
