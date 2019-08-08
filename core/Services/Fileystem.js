@@ -172,18 +172,8 @@ class Filesystem {
    * @param {Object} options The options
    */
   write(entry, data, options) {
-    if (!this.dist) {
-      error(`Unable to write, there is no destination defined for the Filesystem service`);
-    }
-
-    let relativeEntry = relative(this.src, entry);
-
-
-    if (options && options.extname) {
-      relativeEntry = relativeEntry.replace(extname(relativeEntry).replace('.', ''), options.extname);
-    }
-
-    const destination = resolve(this.dist, relativeEntry);
+    // Define the destination path for the current entry.
+    const destination = this.getEntryDestination(entry, options ? options.extname : false);
 
     return new Promise(cb => {
       mkdirp(dirname(destination), (err) => {
@@ -196,12 +186,38 @@ class Filesystem {
             error(err);
           }
 
-          log(`Resource created from entry: ${destination}`);
+          log(`Resource created: ${destination}`);
 
           cb();
         });
       });
     });
+  }
+
+  /**
+   * Returns a destination path for the given entry.
+   *
+   * @param {String} entry Defines the destination for the current entry.
+   * @param {String|Boolean} extension Adjusts the entry extension when writing
+   * it as a destination entry.
+   *
+   * @returns Returns the resolved entry destination.
+   */
+  getEntryDestination(entry, extension) {
+    if (!this.dist) {
+      error([
+        'There is no destination path defined for the Filesystem service.',
+        'A common destination path must be defined for the current Filesystem instance.'
+      ]);
+    }
+
+    let relativeEntry = relative(this.src, entry);
+
+    if (extension) {
+      relativeEntry = relativeEntry.replace(extname(relativeEntry).replace('.', ''), extension);
+    }
+
+    return resolve(this.dist, relativeEntry);
   }
 }
 
