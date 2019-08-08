@@ -154,7 +154,7 @@ class Store {
 
     // Return the defined value of the selected Store if the given key exists.
     if (entry && store.get('state') instanceof Map) {
-      return store.get('state').get(entry) || {};
+      return store.get('state').get(entry) != null ? store.get('state').get(entry) : {};
     }
 
     const state = {};
