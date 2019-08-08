@@ -8,11 +8,14 @@ class Logger {
    * Prints out an error message & exit the current process.
    *
    * @param {String|Array} message The message to display.
+   * @param {Boolean} keepAlive Prevents the process from exiting if true.
    */
-  error(message) {
+  error(message, keepAlive) {
     Logger.outputMessages(message, 'error');
 
-    process.exit(1);
+    if (!keepAlive) {
+      process.exit(1);
+    }
   }
 
   /**
@@ -55,21 +58,42 @@ class Logger {
    * Check if the defined message has been split up in multiple lines.
    * Ouput a new console method for each message entry.
    *
-   * @param {String|Array} message The actual message to output
+   * @param {String|Array} message The actual message to output, a prefix will be
+   * included if the actual message has been defined as an array.
    * @param {String} type Defines the message type to use for the console Object.
    */
   static outputMessages(message, type) {
     const properties = Logger.getMessageProperties(type);
 
-    if (message.constructor === Array && message instanceof Array) {
-      message.forEach(m => {
-        // eslint-disable-next-line no-console
-        console[properties.method](
-          chalk[properties.color](properties.symbol ? symbols[properties.symbol] : ' ', m)
-        );
+    if (Array.isArray(message)) {
+      let messages = '';
+
+      message.forEach((m, i) => {
+        let prefix = properties.symbol ? symbols[properties.symbol] : ' ';
+
+        // Indent all second-next messages with unicode prefixes for
+        // better readability.
+        if (i > 0) {
+          prefix = '\u0020\u0020\u251c';
+        }
+
+        // Adjusts the indenting to the unicode prefix for the last message.
+        if (i >= (message.length - 1)) {
+          prefix = '\u0020\u0020\u2514';
+        }
+
+        // Group all messages.
+        messages += `${prefix} ${m.trim()}`;
+
+        if (i < message.length - 1) {
+          messages += '\n';
+        }
       });
+
+      console[properties.method](
+        chalk[properties.color](messages)
+      );
     } else {
-      // eslint-disable-next-line no-console
       console[properties.method](
         chalk[properties.color](properties.symbol ? symbols[properties.symbol] : ' ', message)
       );
