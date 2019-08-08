@@ -1,15 +1,20 @@
 const { render } = require('node-sass');
 const globImporter = require('node-sass-glob-importer');
-const { info } = require('../Utils/Logger');
+const { error, info, log, warning } = require('../Utils/Logger');
 
 class SassCompiler {
   constructor(services) {
     this.services = services;
     this.taskName = 'sass';
 
+    // Keep track of the compilation & linting errors and output it to the user.
+    this.errors = {
+      sass: false,
+    };
+
     // @TODO use default object for worker to validate the actual worker configuration.
     this.defaults = {
-      entry: []
+      entry: [],
     }
   }
 
@@ -45,6 +50,13 @@ class SassCompiler {
     // Wait for each processes.
     await Promise.all(compiler);
 
+    // Notify the user about the Compiler errors.
+    if (this.errors.sass) {
+      warning('Done compiling, but encountered some errors.');
+      this.errors.sass = false;
+    }
+
+    // Resolve the contractor Task.
     this.services.Contractor.resolve(this.taskName);
   }
 
@@ -54,19 +66,44 @@ class SassCompiler {
    * @param {String} entry The path of the current entry that will be processed.
    */
   processEntry(entry) {
-    return new Promise(cb => {
+    return new Promise((cb) => {
       info(`Compiling entry: ${entry}`);
 
       render({
         file: entry,
-      }, async (error, chunk) => {
+        outputStyle: 'compact',
+        importer: globImporter(),
+        includePaths: [this.services.Filesystem.getRoot()],
+        outFile: this.services.Filesystem.getEntryDestination(entry, 'css'),
+        sourceMap: this.services.Store.get('plains', 'devMode'),
+      }, async (err, chunk) => {
+        if (err) {
+          // Make sure the user is notified if Sass encounters any errors.
+          this.errors.sass = true;
 
-        await this.services.Filesystem.write(entry, chunk.css, {
-          extname: 'css'
-        });
+          // Output any Syntax errors.
+          error([
+            `Error at: ${err.file}:${err.line}:${err.column}`,
+            err.message,
+          ], true)
+        } else {
+          log(`Creating stylesheet for: ${entry}`);
 
-        // Resolve the Promise for the current entry after it has been written
-        // to the filesystem.
+          // Write the actual processed stylesheet.
+          await this.services.Filesystem.write(entry, chunk.css, {
+            extname: 'css'
+          });
+
+          // Generates the sourcemap if enabled within the configuration.
+          if (chunk.map) {
+            log(`Creating sourcemap for: ${entry}`);
+
+            await this.services.Filesystem.write(entry, chunk.map, {
+              extname: 'css.map'
+            });
+          }
+        }
+
         cb();
       });
     });
