@@ -1,8 +1,9 @@
 const { existsSync, writeFile } = require('fs');
 const { sync } = require('glob');
-const { dirname, extname, parse, relative, resolve, sep } = require('path');
+const { dirname, extname, join, parse, relative, resolve, sep } = require('path');
 const mkdirp = require('mkdirp');
-const { error, log } = require('../Utils/Logger');
+const { error, log, warning } = require('../Utils/Logger');
+const { flatten } = require('../Utils/Tools');
 
 /**
  * Utitlty to define and retreive the entry paths for the actual workers
@@ -65,13 +66,18 @@ class Filesystem {
   }
 
   /**
-   * Returns an Array with all subsribed paths within each stack or a specific
-   * stack if the stack paramater matches within the stacks object.
+   * Returns an Array with the subsribed entries within each stack or a specific
+   * stack, if the stack argument exists within the Filesystem instance.
    *
-   * @param {String|Array} stack Returns the specified stack if it exists.
+   * @param {Array} stack Returns the actual stack collection if it exists;
    */
   source(stack) {
     let map = [];
+
+    // Throw an Exception if the requested stack does not exists.
+    if (stack && !this.hasStack(stack)) {
+      error(`Stack: ${stack} does not exists within the Filesystem instance.`);
+    }
 
     if (stack && this.hasStack(stack)) {
       const entries = this.stacks.get(stack);
@@ -87,11 +93,11 @@ class Filesystem {
       });
     }
 
-    return map.filter(item => existsSync(item));
+    return map.filter(item => existsSync(item.path));
   }
 
   /**
-   * Check if the stack if defined.
+   * Helper function to check if the given stack exists.
    *
    * @param {String} stack The stack to check for existance.
    */
@@ -119,64 +125,75 @@ class Filesystem {
    *
    * @param {String} stack The name of the stack to insert defined the entry.
    * @param {String} entries The defined entry paths.
-   *
-   * @returns {Array|Boolean} Returns the entries of the updated stack or false
-   * if the actual stack has not been updated.
+   * @param {String} extname Use the defined extname when writing the entry
+   * to the actual destination. Use the entry extname if no value has been defined.
    */
-  insertEntry(stack, entries) {
+  insertEntry(stack, entries, extname) {
     if (!this.hasStack(stack)) {
       return false;
     }
 
-    // Make sure the paths are within an Array before it will be resolved.
-    const entryPaths = [];
+    // Ensure the entries can be iterated.
+    const entryArray = Array.isArray(entries) ? entries : [entries];
 
-    if (Array.isArray(entries)) {
-      entries.forEach(entry => {
-        entryPaths.push(entry);
-      });
-    } else {
-      entryPaths.push(entries);
-    }
+    // Normalize the entry declerations and also include the entries with
+    // a globbing pattern.
+    const entryCollection = entryArray.map((entry) => {
+      let initialEntry = entry;
 
-    // Resolve the new entries before it will be inserted within the
-    let resolvedPaths = [];
-    entryPaths.forEach(path => {
-      let initialPath = path;
-      const relativePath = relative(process.cwd(), path);
+      // Define the relative path of the actual entry.
+      const relativeEntry = relative(process.cwd(), entry);
+
+      // Define the relative path of the defined Filesystem source directory.
       const relativeSrc = relative(process.cwd(), this.src);
 
-      // Remove the defined root path if it exists within the given entry.
-      if (relativePath.indexOf(relativeSrc) === 0) {
-        initialPath = relativePath.replace(relativeSrc, '').replace(sep, '');
+      // Ensure the Filesystem source path is within the entry.
+      if (relativeEntry.indexOf(relativeSrc) === 0) {
+        initialEntry = relativeEntry.replace(relativeSrc, '').replace(sep, '');
       }
 
-      // Glob the current entry if it has a glob pattern.
-      if (path.indexOf('*') >= 0) {
-        resolvedPaths = resolvedPaths.concat(sync(resolve(this.src, initialPath)).map(globPath => resolve(globPath)));
-      } else {
-        resolvedPaths = resolvedPaths.concat(resolve(this.src, initialPath));
+      // Resolve the current entry path(s)
+      const src = entry.indexOf('*') >= 0
+        ? sync(resolve(this.src, initialEntry)).map(glob => resolve(glob))
+        : [resolve(this.src, initialEntry)];
+
+      return src;
+    });
+
+    // Define the actual destination for each each entry.
+    const entrySubscriptions = flatten(entryCollection).map(src => {
+      const dist = this.getEntryDestination(src, extname || false);
+
+      const entrySubscription = {
+        path: src,
+        cwd: this.src,
+        entry: relative(this.src, src),
+        dist: join(this.dist, dirname(relative(this.src, src)))
       }
+
+      return entrySubscription;
     });
 
     // Get the defined stack in order to merge the given entries.
     const initialStack = this.stacks.get(stack);
 
-    // Make sure only new entries are inserted within the stack.
-    const transformedStack = resolvedPaths
-      .filter(path => path !== initialStack[path] && existsSync(path))
+    // Ensure there are no duplicate entries defined for the stack.
+    const newStack = entrySubscriptions
+      .filter(entry => {
+        if (!initialStack[entry] && existsSync(entry.path)) {
+          return entry;
+        }
+        else if (entry.path !== initialStack[entry].path && existsSync(entry.path)) {
+          return entry
+
+        }
+      })
       .concat(initialStack);
 
-    // Update the stack with the new paths.
-    if (transformedStack.length > 0) {
-      this.stacks.set(stack, transformedStack);
-
-      // Return the updated stack if the stack has been updated.
-      return this.source(stack);
+    // Update the stack with the new entries.
+    if (newStack.length > 0) {
+      this.stacks.set(stack, newStack);
     }
-
-    // Return false if the defined stack has not been updated.
-    return false;
   }
 
   /**
