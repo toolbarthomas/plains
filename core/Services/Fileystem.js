@@ -30,10 +30,25 @@ class Filesystem {
   }
 
   /**
-   * Defines the destination where the files will be written by the Filesystem.
+   * Defines the destination directory where each entry will resolve to by
+   * the Filesystem.
+   *
+   * The destination directory will be resolved relative to the path of the
+   * working directory from the current Nodejs instance.
+   *
+   * @param {String} path The base path that will be resolved.
    */
   defineDestination(path) {
-    this.dist = resolve(path);
+    if (path) {
+      this.dist = resolve(path);
+
+      // Create the destination folder if it doesn't exists yet.
+      if (!existsSync(this.dist)) {
+        log(`Creating destination folder: ${this.dist}`);
+
+        mkdirp(this.dist)
+      }
+    }
   }
 
   /**
