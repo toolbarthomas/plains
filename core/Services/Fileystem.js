@@ -221,8 +221,9 @@ class Filesystem {
   getEntryDestination(entry, extension) {
     if (!this.dist) {
       error([
-        'There is no destination path defined for the Filesystem service.',
-        'A common destination path must be defined for the current Filesystem instance.'
+        `Unable to define the destination for: ${entry}`,
+        'There is no global destination path defined for the Filesystem service.',
+        'You should define the destination path relative to the working directory of your Nodejs instance.'
       ]);
     }
 
