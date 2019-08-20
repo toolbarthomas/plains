@@ -106,6 +106,8 @@ class Filesystem {
    */
   createStack(stack) {
     if (this.hasStack(stack)) {
+      warning(`Unable to create stack: ${stack}, it already exists within the Filesystem instance.`);
+
       return;
     }
 
