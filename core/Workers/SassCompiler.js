@@ -1,6 +1,6 @@
 const { render } = require('node-sass');
 const globImporter = require('node-sass-glob-importer');
-const { error, info, log, warning } = require('../Utils/Logger');
+const { error, info, log, success, warning } = require('../Utils/Logger');
 
 class SassCompiler {
   constructor(services) {
@@ -8,11 +8,11 @@ class SassCompiler {
     this.taskName = 'sass';
 
     // Keep track of the compilation & linting errors and output it to the user.
-    this.errors = {
-      sass: false,
+    this.exceptions = {
+      sass: [],
     };
 
-    // @TODO use default object for worker to validate the actual worker configuration.
+    // @TODO use defaults object for worker to validate the actual worker configuration.
     this.defaults = {
       entry: [],
     }
@@ -28,7 +28,7 @@ class SassCompiler {
 
     // Defines the actual Sass entry files that are defined within the configuration.
     // @TODO include support for config entries
-    this.services.Filesystem.insertEntry('sassCompiler', this.config.entry);
+    this.services.Filesystem.insertEntry('sassCompiler', this.config.entry, 'css');
 
     // Expose the SassCompiler worker task.
     this.services.Contractor.subscribe(this.taskName, this.init.bind(this), true);
@@ -47,14 +47,12 @@ class SassCompiler {
       await this.processEntry(entry);
     });
 
-    // Wait for each processes.
+    // Proces each entry asyncronously.
     await Promise.all(compiler);
 
-    // Notify the user about the Compiler errors.
-    if (this.errors.sass) {
-      warning('Done compiling, but encountered some errors.');
-      this.errors.sass = false;
-    }
+    // Output any encountered exceptions before resolving to ensure the
+    // exception are not directly visible within the shell.
+    this.outputExceptions();
 
     // Resolve the contractor Task.
     this.services.Contractor.resolve(this.taskName);
@@ -76,16 +74,17 @@ class SassCompiler {
         includePaths: [this.services.Filesystem.getRoot()],
         outFile: this.services.Filesystem.getEntryDestination(entry, 'css'),
         sourceMap: this.services.Store.get('plains', 'devMode'),
-      }, async (err, chunk) => {
-        if (err) {
-          // Make sure the user is notified if Sass encounters any errors.
-          this.errors.sass = true;
+      }, async (exception, chunk) => {
+        if (exception) {
+          // Store the exception of the current entry since it encountered CSS
+          // errors.
+          this.exceptions.sass.push({
+            file: exception.file,
+            line: exception.line,
+            column: exception.column,
+            message: exception.message
+          });
 
-          // Output any Syntax errors.
-          error([
-            `Error at: ${err.file}:${err.line}:${err.column}`,
-            err.message,
-          ], true)
         } else {
           log(`Creating stylesheet for: ${entry}`);
 
@@ -107,6 +106,28 @@ class SassCompiler {
         cb();
       });
     });
+  }
+
+  /**
+   * Output any encountered exceptions that are present
+   */
+  outputExceptions() {
+    // Notify the user about the Compiler errors.
+    if (this.exceptions && this.exceptions.sass.length) {
+      warning('Done compiling, but encountered some errors.');
+
+      // Output the encountered syntax errors.
+      this.exceptions.sass.forEach(exception => {
+        error([
+          `Error at: ${exception.file}:${exception.line}:${exception.column}`,
+          exception.message,
+        ], true);
+      });
+
+      this.exceptions.sass = [];
+    } else {
+      success('Successfully compiled all entries without any errors.')
+    }
   }
 }
 
