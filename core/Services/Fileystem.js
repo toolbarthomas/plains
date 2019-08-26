@@ -183,7 +183,7 @@ class Filesystem {
         if (!initialStack[entry] && existsSync(entry.path)) {
           return entry;
         }
-        else if (entry.path !== initialStack[entry].path && existsSync(entry.path)) {
+        else if (initialStack[entry] && entry.path !== initialStack[entry].path && existsSync(entry.path)) {
           return entry
 
         }
