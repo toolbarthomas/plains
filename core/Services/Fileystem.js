@@ -66,12 +66,15 @@ class Filesystem {
   }
 
   /**
-   * Returns an Array with the subsribed entries within each stack or a specific
+   * Return the subsribed stack entries within each stack or a specific
    * stack, if the stack argument exists within the Filesystem instance.
    *
-   * @param {Array} stack Returns the actual stack collection if it exists;
+   * @param {String} stack Returns the actual stack collection if it exists;
+   * @param {Function} callback The function to call within each stack iteration.
+   *
+   * @returns {Object} The selected Stack with all the defined entries.
    */
-  source(stack) {
+  source(stack, callback) {
     let map = [];
 
     // Throw an Exception if the requested stack does not exists.
@@ -90,6 +93,18 @@ class Filesystem {
         entries.forEach(entry => {
           map = map.filter(item => entry !== item).concat(entry);
         });
+      });
+    }
+
+    // Iterate trough all the defined stack sources if the callback function
+    // has been defined.
+    if (typeof callback === 'function') {
+      return map.map(item => {
+        if (existsSync(item.path)) {
+          callback(item);
+
+          return item;
+        }
       });
     }
 
