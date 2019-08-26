@@ -68,11 +68,11 @@ class SassCompiler {
       info(`Compiling entry: ${entry}`);
 
       render({
-        file: entry,
+        file: entry.path,
         outputStyle: 'compact',
         importer: globImporter(),
         includePaths: [this.services.Filesystem.getRoot()],
-        outFile: this.services.Filesystem.getEntryDestination(entry, 'css'),
+        outFile: this.services.Filesystem.resolveEntry(entry, '{name}.css'),
         sourceMap: this.services.Store.get('plains', 'devMode'),
       }, async (exception, chunk) => {
         if (exception) {
@@ -89,17 +89,13 @@ class SassCompiler {
           log(`Creating stylesheet for: ${entry}`);
 
           // Write the actual processed stylesheet.
-          await this.services.Filesystem.write(entry, chunk.css, {
-            extname: 'css'
-          });
+          await this.services.Filesystem.write(entry, chunk.css, '{name}.css');
 
           // Generates the sourcemap if enabled within the configuration.
           if (chunk.map) {
             log(`Creating sourcemap for: ${entry}`);
 
-            await this.services.Filesystem.write(entry, chunk.map, {
-              extname: 'css.map'
-            });
+            await this.services.Filesystem.write(entry, chunk.map, '{name}.css.map');
           }
         }
 

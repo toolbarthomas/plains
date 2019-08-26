@@ -1,6 +1,6 @@
 const { existsSync, writeFile } = require('fs');
 const { sync } = require('glob');
-const { dirname, extname, join, parse, relative, resolve, sep } = require('path');
+const { basename, dirname, extname, join, parse, relative, resolve, sep } = require('path');
 const mkdirp = require('mkdirp');
 const { error, log, warning } = require('../Utils/Logger');
 const { flatten } = require('../Utils/Tools');
@@ -96,19 +96,15 @@ class Filesystem {
       });
     }
 
-    // Iterate trough all the defined stack sources if the callback function
-    // has been defined.
-    if (typeof callback === 'function') {
-      return map.map(item => {
-        if (existsSync(item.path)) {
-          callback(item);
+    return map.map((item) => {
+      if (typeof callback === 'function') {
+        callback(item);
+      }
 
-          return item;
-        }
-      });
-    }
-
-    return map.filter(item => existsSync(item.path));
+      if (item instanceof Object && existsSync(item.path)) {
+        return item;
+      }
+    });
   }
 
   /**
@@ -177,7 +173,7 @@ class Filesystem {
 
     // Define the actual destination for each each entry.
     const entrySubscriptions = flatten(entryCollection).map(src => {
-      const dist = this.getEntryDestination(src, extname || false);
+      const dist = this.resolveDestination(src, extname || false);
 
       const entrySubscription = {
         path: src,
@@ -216,13 +212,13 @@ class Filesystem {
    * The destination directory should be defined when creating a new instance of
    * the Filesystem.
    *
-   * @param {String} entry The path of the actual data source.
+   * @param {Object} entry The defined entry that will be used.
    * @param {Buffer} data The data source as Buffer.
    * @param {Object} options The options
    */
-  write(entry, data, options) {
+  write(entry, data, name) {
     // Define the destination path for the current entry.
-    const destination = this.getEntryDestination(entry, options ? options.extname : false);
+    const destination = this.resolveEntry(entry, name);
 
     return new Promise(cb => {
       mkdirp(dirname(destination), (err) => {
@@ -252,7 +248,7 @@ class Filesystem {
    *
    * @returns Returns the resolved entry destination.
    */
-  getEntryDestination(entry, extension) {
+  resolveDestination(entry, extension) {
     if (!this.dist) {
       error([
         `Unable to define the destination for: ${entry}`,
@@ -268,6 +264,32 @@ class Filesystem {
     }
 
     return resolve(this.dist, relativeEntry);
+  }
+
+  /**
+   * Return the resolved destination path for the current entry.
+   *
+   * @param {Object} entry The entry to resolve from.
+   * @param {String} name The optional name to resolve the entry file to.
+   */
+  resolveEntry(entry, name) {
+    if (!entry instanceof Object) {
+      error('The defined entry does not match the Filesystem schema.');
+    }
+
+    if (!entry.dist) {
+      error('The current entry has no destination path defined.');
+    }
+
+    if (typeof name !== 'string') {
+      error([`Unable to resolve for ${entry.path}`, 'The given name is not a valid string.']);
+    }
+
+    const filename = name
+      ? name.replace('{name}', basename(entry.path, extname(entry.path)))
+      : basename(entry.path);
+
+    return resolve(entry.dist, filename);
   }
 }
 
