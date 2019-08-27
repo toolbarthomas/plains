@@ -28,7 +28,7 @@ class SassCompiler {
 
     // Defines the actual Sass entry files that are defined within the configuration.
     // @TODO include support for config entries
-    this.services.Filesystem.insertEntry('sassCompiler', this.config.entry, 'css');
+    this.services.Filesystem.insertEntry('sassCompiler', this.config.entry);
 
     // Expose the SassCompiler worker task.
     this.services.Contractor.subscribe(this.taskName, this.init.bind(this), true);
@@ -72,7 +72,7 @@ class SassCompiler {
         outputStyle: 'compact',
         importer: globImporter(),
         includePaths: [this.services.Filesystem.getRoot()],
-        outFile: this.services.Filesystem.resolveEntry(entry, '{name}.css'),
+        outFile: this.services.Filesystem.resolveEntryPath(entry, '{name}.css'),
         sourceMap: this.services.Store.get('plains', 'devMode'),
       }, async (exception, chunk) => {
         if (exception) {

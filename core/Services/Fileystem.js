@@ -136,10 +136,8 @@ class Filesystem {
    *
    * @param {String} stack The name of the stack to insert defined the entry.
    * @param {String} entries The defined entry paths.
-   * @param {String} extname Use the defined extname when writing the entry
-   * to the actual destination. Use the entry extname if no value has been defined.
    */
-  insertEntry(stack, entries, extname) {
+  insertEntry(stack, entries) {
     if (!this.hasStack(stack)) {
       return false;
     }
@@ -173,16 +171,12 @@ class Filesystem {
 
     // Define the actual destination for each each entry.
     const entrySubscriptions = flatten(entryCollection).map(src => {
-      const dist = this.resolveDestination(src, extname || false);
-
-      const entrySubscription = {
+      return {
         path: src,
         cwd: this.src,
         entry: relative(this.src, src),
-        dist: join(this.dist, dirname(relative(this.src, src)))
+        dist: this.resolveEntryDestination(src),
       }
-
-      return entrySubscription;
     });
 
     // Get the defined stack in order to merge the given entries.
@@ -218,20 +212,20 @@ class Filesystem {
    */
   write(entry, data, name) {
     // Define the destination path for the current entry.
-    const destination = this.resolveEntry(entry, name);
+    const resourceDestination = this.resolveEntryPath(entry, name);
 
     return new Promise(cb => {
-      mkdirp(dirname(destination), (err) => {
+      mkdirp(dirname(resourceDestination), (err) => {
         if (err) {
           error(err);
         }
 
-        writeFile(destination, data, (err) => {
+        writeFile(resourceDestination, data, (err) => {
           if (err) {
             error(err);
           }
 
-          log(`Resource created: ${destination}`);
+          log(`Resource created: ${resourceDestination}`);
 
           cb();
         });
@@ -240,30 +234,22 @@ class Filesystem {
   }
 
   /**
-   * Returns a destination path for the given entry.
+   * Resolves the destination directory path for the defined source.
    *
-   * @param {String} entry Defines the destination for the current entry.
-   * @param {String|Boolean} extension Adjusts the entry extension when writing
-   * it as a destination entry.
+   * @param {String} path Defines the destination for the current entry.
    *
-   * @returns Returns the resolved entry destination.
+   * @returns Returns the dirname for the defined entry source.
    */
-  resolveDestination(entry, extension) {
+  resolveEntryDestination(path) {
     if (!this.dist) {
       error([
-        `Unable to define the destination for: ${entry}`,
+        `Unable to define the destination for: ${path}`,
         'There is no global destination path defined for the Filesystem service.',
         'You should define the destination path relative to the working directory of your Nodejs instance.'
       ]);
     }
 
-    let relativeEntry = relative(this.src, entry);
-
-    if (extension) {
-      relativeEntry = relativeEntry.replace(extname(relativeEntry).replace('.', ''), extension);
-    }
-
-    return resolve(this.dist, relativeEntry);
+    return join(this.dist, dirname(relative(this.src, path)));
   }
 
   /**
@@ -272,7 +258,7 @@ class Filesystem {
    * @param {Object} entry The entry to resolve from.
    * @param {String} name The optional name to resolve the entry file to.
    */
-  resolveEntry(entry, name) {
+  resolveEntryPath(entry, name) {
     if (!entry instanceof Object) {
       error('The defined entry does not match the Filesystem schema.');
     }
@@ -281,15 +267,28 @@ class Filesystem {
       error('The current entry has no destination path defined.');
     }
 
-    if (typeof name !== 'string') {
+    if (name && typeof name !== 'string') {
       error([`Unable to resolve for ${entry.path}`, 'The given name is not a valid string.']);
     }
 
+    // Defines the optional name for the current entyr, use the default
+    // entry filename otherwise.
     const filename = name
-      ? name.replace('{name}', basename(entry.path, extname(entry.path)))
+      ? name.replace('{name}', this.resolveEntryName(entry))
       : basename(entry.path);
 
     return resolve(entry.dist, filename);
+  }
+
+  /**
+   * Returns the actual name of the entry file without extension.
+   *
+   * @param {Object} entry The entry to resolve from.
+   *
+   * @returns The filename of the defined entry.
+   */
+  resolveEntryName(entry) {
+    return basename(entry.path, extname(entry.path));
   }
 }
 
