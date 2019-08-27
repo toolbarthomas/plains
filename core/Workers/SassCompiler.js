@@ -54,7 +54,7 @@ class SassCompiler {
     // exception are not directly visible within the shell.
     this.outputExceptions();
 
-    // Resolve the contractor Task.
+    // Resolve the task.
     this.services.Contractor.resolve(this.taskName);
   }
 
@@ -65,13 +65,13 @@ class SassCompiler {
    */
   processEntry(entry) {
     return new Promise((cb) => {
-      info(`Compiling entry: ${entry}`);
+      info(`Running Sasscompiler for entry: ${entry.path}`);
 
       render({
         file: entry.path,
         outputStyle: 'compact',
         importer: globImporter(),
-        includePaths: [this.services.Filesystem.getRoot()],
+        includePaths: [this.services.Filesystem.resolveSource()],
         outFile: this.services.Filesystem.resolveEntryPath(entry, '{name}.css'),
         sourceMap: this.services.Store.get('plains', 'devMode'),
       }, async (exception, chunk) => {
@@ -85,33 +85,25 @@ class SassCompiler {
             message: exception.message
           });
 
+          cb();
         } else {
-          log(`Creating stylesheet for: ${entry}`);
-
-          // Write the actual processed stylesheet.
-          await this.services.Filesystem.write(entry, chunk.css, '{name}.css');
-
-          // Generates the sourcemap if enabled within the configuration.
-          if (chunk.map) {
-            log(`Creating sourcemap for: ${entry}`);
-
-            await this.services.Filesystem.write(entry, chunk.map, '{name}.css.map');
-          }
+          this.services.Filesystem.writeFiles(
+            [entry, chunk.css, '{name}.css'],
+            [entry, chunk.map, '{name}.css.map'],
+          ).then(() => {
+            cb();
+          });
         }
-
-        cb();
       });
     });
   }
 
   /**
-   * Output any encountered exceptions that are present
+   * Output the encountered Errors of Node Sass.
    */
   outputExceptions() {
     // Notify the user about the Compiler errors.
     if (this.exceptions && this.exceptions.sass.length) {
-      warning('Done compiling, but encountered some errors.');
-
       // Output the encountered syntax errors.
       this.exceptions.sass.forEach(exception => {
         error([
@@ -119,6 +111,12 @@ class SassCompiler {
           exception.message,
         ], true);
       });
+
+      if (this.services.Store.get('plains', 'devMode')) {
+        warning('Done compiling, but encountered some errors.');
+      } else {
+        error('Sass encountered some errors during compilation...');
+      }
 
       this.exceptions.sass = [];
     } else {

@@ -2,7 +2,7 @@ const { existsSync, writeFile } = require('fs');
 const { sync } = require('glob');
 const { basename, dirname, extname, join, parse, relative, resolve, sep } = require('path');
 const mkdirp = require('mkdirp');
-const { error, log, warning } = require('../Utils/Logger');
+const { error, log, warning, success } = require('../Utils/Logger');
 const { flatten } = require('../Utils/Tools');
 
 /**
@@ -57,12 +57,29 @@ class Filesystem {
    *
    * @returns {String} Returns the root path of the application.
    */
-  getRoot() {
+  resolveSource() {
     if (!this.src) {
       error(`No root path has been defined for the Filesystem.`);
     }
 
     return this.src;
+  }
+
+  /**
+   * Returns the destination path where all entry file will be written to.
+   *
+   * @returns {String} Returns the destination path of dist directory.
+   */
+  resolveDestination() {
+    if (!this.dist) {
+      error([
+        `Unable to define the destination for: ${path}`,
+        'There is no global destination path defined for the Filesystem service.',
+        'You should define the destination path relative to the working directory of your Nodejs instance.'
+      ]);
+    }
+
+    return this.dist;
   }
 
   /**
@@ -210,27 +227,67 @@ class Filesystem {
    * @param {Buffer} data The data source as Buffer.
    * @param {Object} options The options
    */
-  write(entry, data, name) {
+  writeFile(entry, data, name) {
     // Define the destination path for the current entry.
     const resourceDestination = this.resolveEntryPath(entry, name);
 
     return new Promise(cb => {
-      mkdirp(dirname(resourceDestination), (err) => {
-        if (err) {
-          error(err);
-        }
+      if (!data) {
+        log(`Skipping empty resource: ${resourceDestination}`);
 
-        writeFile(resourceDestination, data, (err) => {
+        cb();
+      } else {
+        mkdirp(dirname(resourceDestination), (err) => {
           if (err) {
             error(err);
           }
 
-          log(`Resource created: ${resourceDestination}`);
+          log(`Creating resource: ${resourceDestination}`);
 
-          cb();
+          writeFile(resourceDestination, data, (err) => {
+            if (err) {
+              error(err);
+            }
+
+            success(`Resource created: ${resourceDestination}`);
+
+            cb();
+          });
         });
-      });
+      }
     });
+  }
+
+  /**
+   * Method to write the defined items array in an asynchronous order.
+   * You can call to actual writeFile method directly within the
+   * items argument or just pas down the arguments from the initiaed writeFile
+   * method.
+   *
+   * @param  {...Function|Object} items The defined items that should be created
+   * by the Filesystem.
+   *
+   */
+  async writeFiles(...items) {
+    const queue = items.map(item => {
+      if (typeof item === 'function') {
+        return item;
+      } else if (Array.isArray(item)) {
+        return this.writeFile(
+          item[0],
+          item[1],
+          item[2]
+        )
+      } else if (item instanceof Object) {
+        return this.writeFile(
+          item.entry,
+          item.data,
+          item.name
+        )
+      }
+    });
+
+    await Promise.all(queue);
   }
 
   /**
@@ -241,15 +298,7 @@ class Filesystem {
    * @returns Returns the dirname for the defined entry source.
    */
   resolveEntryDestination(path) {
-    if (!this.dist) {
-      error([
-        `Unable to define the destination for: ${path}`,
-        'There is no global destination path defined for the Filesystem service.',
-        'You should define the destination path relative to the working directory of your Nodejs instance.'
-      ]);
-    }
-
-    return join(this.dist, dirname(relative(this.src, path)));
+    return join(this.resolveDestination(), dirname(relative(this.src, path)));
   }
 
   /**
