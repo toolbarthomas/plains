@@ -65,7 +65,7 @@ class SassCompiler {
    */
   processEntry(entry) {
     return new Promise((cb) => {
-      info(`Running Sasscompiler for entry: ${entry.path}`);
+      info(`Render sass entry: ${entry.path}`);
 
       render({
         file: entry.path,

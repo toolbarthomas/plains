@@ -233,7 +233,7 @@ class Filesystem {
 
     return new Promise(cb => {
       if (!data) {
-        log(`Skipping empty resource: ${resourceDestination}`);
+        log('Skipping empty resource', resourceDestination);
 
         cb();
       } else {
@@ -242,7 +242,7 @@ class Filesystem {
             error(err);
           }
 
-          log(`Creating resource: ${resourceDestination}`);
+          log('Creating resource', resourceDestination);
 
           writeFile(resourceDestination, data, (err) => {
             if (err) {
