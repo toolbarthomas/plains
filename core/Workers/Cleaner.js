@@ -1,38 +1,43 @@
 const rimraf = require('rimraf');
+const { existsSync } = require('fs');
+const { dirname } = require('path');
+const { log } = require('../Utils/Logger');
+const { gray } = require('chalk');
 
+/**
+ * Core worker for Plains that clears the defined build directory.
+ *
+ * @param {Object} services The Plains services instances.
+ */
 class Cleaner {
   constructor(services) {
     this.services = services;
     this.taskName = 'clean';
   }
 
+  /**
+   * Subscribes the cleaner worker to Plains.
+   */
   mount() {
     this.services.Contractor.subscribe(this.taskName, this.init.bind(this), true);
   }
 
+  /**
+   * Removes all files & directories within the defined Plains build directory.
+   */
   init() {
-    // Source each stack from the Filesystem.
-    const entries = this.services.Filesystem.source();
+    const entry = this.services.Filesystem.resolveDestination();
 
-    // Don't run the Cleaner if there are no sources defined.
-    if (!entries.length) {
-      this.services.Contractor.resolve(this.taskName);
+    if (!existsSync(entry)) {
+      return;
     }
 
-    // Remove each file from stack.
-    entries.forEach(entry => {
-      // Use the queue to resolve the actual Cleaner after all entries have been removed.
-      let queue = 0;
+    log('Clearing build directory', entry);
 
-      rimraf(entry, () => {
-        // Increase the current queue after the current entry has been removed.
-        queue += 1;
+    rimraf(`${entry}/**/*`, () => {
+      this.services.Contractor.resolve(this.taskName);
 
-        // Resolve the subsribed Promise when all entries have been removed.
-        if (queue >= entries.length) {
-          this.services.Contractor.resolve(this.taskName);
-        }
-      });
+      log(`Directory cleared: ${gray(entry)}`);
     });
   }
 }
