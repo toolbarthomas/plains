@@ -2,10 +2,15 @@ const { render } = require('node-sass');
 const globImporter = require('node-sass-glob-importer');
 const { error, info, log, success, warning } = require('../Utils/Logger');
 
+/**
+ * Core worker for Plains that compiles Sass files to stylesheets with optional
+ * mapping.
+ */
 class SassCompiler {
   constructor(services) {
     this.services = services;
     this.taskName = 'sass';
+    this.machineName = 'sassCompiler';
 
     // Keep track of the compilation & linting errors and output it to the user.
     this.exceptions = {
@@ -21,14 +26,19 @@ class SassCompiler {
   mount() {
     // Get the specific sassCompiler configuraiton that has been defined
     // by the ConfigManager service.
-    this.config = this.services.Store.get('plains', 'workers')['sassCompiler'] || {};
+    this.config = this.services.Store.get('plains', 'workers')[this.machineName] || {};
 
     // Create a new Filesystem stack to define the sass entry files.
-    this.services.Filesystem.createStack('sassCompiler');
+    this.services.Filesystem.createStack(this.machineName);
 
     // Defines the actual Sass entry files that are defined within the configuration.
     // @TODO include support for config entries
-    this.services.Filesystem.insertEntry('sassCompiler', this.config.entry);
+    this.services.Filesystem.insertEntry(this.machineName, this.config.entry);
+
+    // Register the Sasscompiler to the common Plains.
+    this.services.PluginManager.subscribe(this.machineName, [
+      'DevServer'
+    ]);
 
     // Expose the SassCompiler worker task.
     this.services.Contractor.subscribe(this.taskName, this.init.bind(this), true);
@@ -40,7 +50,7 @@ class SassCompiler {
   async init() {
     // Get the defined entry file.
     // @todo check if there is an entry file defined within the wachter queue.
-    const entries = this.services.Filesystem.source('sassCompiler');
+    const entries = this.services.Filesystem.source(this.machineName);
 
     // Process each entry in parallel order.
     const compiler = entries.map(async (entry) => {
@@ -115,7 +125,7 @@ class SassCompiler {
       if (this.services.Store.get('plains', 'devMode')) {
         warning('Done compiling, but encountered some errors.');
       } else {
-        error('Sasscompiler encountered some errors during compilation...');
+        error(`Encountered some errors during compilation...`);
       }
 
       this.exceptions.sass = [];

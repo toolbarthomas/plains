@@ -37,7 +37,7 @@ class Cleaner {
     rimraf(`${entry}/**/*`, () => {
       this.services.Contractor.resolve(this.taskName);
 
-      log(`Directory cleared: ${gray(entry)}`);
+      log('Directory cleared', entry);
     });
   }
 }

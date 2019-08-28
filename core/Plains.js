@@ -32,6 +32,7 @@ class Plains {
     this.services = {
       Contractor: new Contractor(),
       Filesystem: new Filesystem(),
+      PluginManager: new PluginManager(),
       Store: new Store(),
     };
 
