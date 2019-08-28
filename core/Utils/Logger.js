@@ -50,8 +50,22 @@ class Logger {
    *
    * @param {String|Array} message The message to display.
    */
-  log(message) {
-    Logger.outputMessages(message, 'log');
+  log(message, details) {
+    const { method, color } = Logger.getMessageProperties('log');
+
+    if (typeof message != 'string') {
+      return;
+    }
+
+    if (details) {
+      if (message.endsWith(':')) {
+        console[method](`${chalk[color](message)} ${chalk.gray(details)}`);
+      } else {
+        console[method](`${chalk[color](message + ':')} ${chalk.gray(details)}`);
+      }
+    } else {
+      console[method](chalk[color](message));
+    }
   }
 
   /**
