@@ -1,4 +1,4 @@
-const { error } = require('./Utils/Logger');
+const { error, log } = require('./Utils/Logger');
 
 const Argv = require('./Common/Argv');
 const ConfigLoader = require('./Common/ConfigLoader');
@@ -9,6 +9,8 @@ const Store = require('./Services/Store');
 
 const Cleaner = require('./Workers/Cleaner');
 const SassCompiler = require('./Workers/SassCompiler');
+
+const Server = require('./Plugins/Server');
 
 /**
  * Implements the core functionality for Plains.
@@ -24,7 +26,8 @@ class Plains {
     };
 
     /**
-     * Exposes the core Plains services in order to assing worker instance.
+     * Services are the core classes that will be used by Plains.
+     * A service provides logic to enable communication between workers & plugins.
      */
     this.services = {
       Contractor: new Contractor(),
@@ -33,12 +36,21 @@ class Plains {
     };
 
     /**
-     * Assigns the core workers.
+     * Workers are the base Classes to transform resources like stylesheets
+     * and images.
      */
     this.workers = {
       Cleaner: new Cleaner(this.services),
       SassCompiler: new SassCompiler(this.services),
     };
+
+    /**
+     * Plugins provides environment specific functionalities like a devServer
+     * for development and minification for production.
+     */
+    this.plugins = {
+      Server: new Server(this.services)
+    }
   }
 
   /**
@@ -66,7 +78,7 @@ class Plains {
     // Defines the destination path where the processed entries will be written to.
     this.services.Filesystem.defineDestination(this.config.dist);
 
-    // Mount the common worker for the application so it can be initiated.
+    // Mount the common workers for the application so it can be initiated.
     Object.keys(this.workers).forEach(name => {
       const worker = this.workers[name] || false;
 
@@ -74,24 +86,50 @@ class Plains {
         error(`Unable to mount undefined worker: ${name}`);
       }
 
-      if (typeof worker.mount !== 'function') {
+      if (typeof worker['mount'] !== 'function') {
         error(`No mount method has been defined for worker: ${name}`);
       }
 
+      log('Mounting worker', name);
+
       // Exposes each worker logic into the Plains services.
       worker.mount();
+    });
+
+    // Mount the environment specific plugins.
+    Object.keys(this.plugins).forEach(name => {
+      const plugin = this.plugins[name];
+
+      if (typeof plugin['mount'] !== 'function') {
+        return;
+      }
+
+      log('Mounting plugin', name);
+
+      plugin.mount();
     });
   }
 
   /**
    * Initialize Plains.
    */
-  run() {
+  async run() {
     const { task } = this.args;
 
+    // Run the defined task.
     if (task) {
-      this.services.Contractor.publish(task);
+      await this.services.Contractor.publish(task);
     }
+
+    Object.keys(this.plugins).forEach(name => {
+      const plugin = this.plugins[name];
+
+      if (typeof plugin['mount'] !== 'function') {
+        return;
+      }
+
+      plugin.mount();
+    });
   }
 }
 
