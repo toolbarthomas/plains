@@ -115,7 +115,7 @@ class SassCompiler {
       if (this.services.Store.get('plains', 'devMode')) {
         warning('Done compiling, but encountered some errors.');
       } else {
-        error('Sass encountered some errors during compilation...');
+        error('Sasscompiler encountered some errors during compilation...');
       }
 
       this.exceptions.sass = [];

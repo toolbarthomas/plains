@@ -17,7 +17,7 @@ class Contractor {
    */
   subscribe(name, handler, async) {
     if (!this.tasks[name] && typeof handler === 'function') {
-      log(`Subscribing task: ${name}`);
+      log('Subscribing task', name);
 
       /**
        * Define a new Object for the given task where the actual command where
@@ -84,7 +84,7 @@ class Contractor {
               error(`Task: '${task}' does not exists.`);
             }
 
-            info(`Starting task: ${task}`);
+            info(`Starting: ${task}`);
 
             if (this.tasks[task].options && this.tasks[task].options.async) {
               await this.tasks[task].fn(args);
@@ -97,7 +97,7 @@ class Contractor {
         Promise.resolve()
       );
 
-      success('Done!');
+      success('Done');
     }
   }
 

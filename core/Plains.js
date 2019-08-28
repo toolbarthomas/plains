@@ -75,7 +75,7 @@ class Plains {
       }
 
       if (typeof worker.mount !== 'function') {
-        error(`No mount method has been defined for: '${name}'.`);
+        error(`No mount method has been defined for worker: ${name}`);
       }
 
       // Exposes each worker logic into the Plains services.

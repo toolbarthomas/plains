@@ -20,7 +20,7 @@ class Store {
       // Create the new Store witn the defined name.
       this.buckets.set(name, new Map([state]));
 
-      log(`Store updated: ${name}`);
+      log('Store created', name);
 
       if (data instanceof Object) {
         this.commit(name, data);
@@ -71,7 +71,7 @@ class Store {
       });
 
       if (!silent) {
-        log(`Store updated: Committed to ${name}`);
+        log('Store updated', name);
       }
     } else {
       warning(`Unable to commit the data within ${name}, the given data is not a valid Object`);
@@ -187,9 +187,9 @@ class Store {
       if (typeof entry === 'string') {
         this.buckets.get(name).get('state').delete(entry);
 
-        log(`Store updated: Removed '${entry}' from ${name}`);
+        log('Store updated', `Removed '${entry}' from ${name}`);
       } else {
-        log(`Bucket remove: ${name}`)
+        log('Store deleted', name);
         this.buckets.get(name).delete('state');
       }
     } else {
