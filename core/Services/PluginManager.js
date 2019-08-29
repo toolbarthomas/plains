@@ -50,11 +50,12 @@ class PluginManager {
    * Initiate the subscribed plugins from the assigned task.
    *
    * @param {String} task The task to get the subscribed plugins from.
+   * @param {Object} args Optional function arguments for the defined plugin.
    */
   async publish(task, ...args) {
     // Ensure the actual task has been assigned by the PluginManager.
     if (!this.subscriptions[task]) {
-      log(`No plugins have been defined for`, task);
+      log(`No plugins have been defined for task`, task);
       return;
     }
 
@@ -122,7 +123,7 @@ class PluginManager {
    */
   resolve(plugin, ...args) {
     if (!this.instances[plugin] || !this.instances[plugin].resolve) {
-      warning(`Task '${plugin}' is synchronous and won't be resolved.`);
+      warning(`Plugin '${plugin}' is synchronous and won't be resolved.`);
     } else {
       this.instances[plugin].resolve(...args);
     }
@@ -137,7 +138,7 @@ class PluginManager {
    */
   reject(plugin, ...args) {
     if (!this.instances[plugin].resolve) {
-      warning(`Task '${plugin}' is synchronous and won't be rejected.`);
+      warning(`Plugin '${plugin}' is synchronous and won't be rejected.`);
     } else {
       this.instances[plugin].reject(...args);
     }

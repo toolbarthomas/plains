@@ -113,10 +113,10 @@ class Plains {
   /**
    * Initialize Plains.
    */
-  run() {
+  async run() {
     const { task } = this.args;
 
-    task.split(',').filter(t => t.trim()).reduce((previousTask, currentTask) =>
+    await task.split(',').filter(t => t.trim()).reduce((previousTask, currentTask) =>
       previousTask.then(async () => {
         await this.services.Contractor.publish(currentTask);
         await this.services.PluginManager.publish(currentTask);
@@ -124,7 +124,7 @@ class Plains {
       Promise.resolve()
     );
 
-    success('Done');
+    success('Done.');
   }
 }
 
