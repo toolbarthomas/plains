@@ -6,6 +6,7 @@ class DevServer {
     this.name = 'serve';
     this.machineName = 'DevServer';
     this.config = {};
+    this.instance = false;
   }
 
   mount() {
@@ -14,15 +15,24 @@ class DevServer {
     this.services.PluginManager.subscribe(this.machineName, this.init.bind(this));
   }
 
-  init() {
-    return;
+  async init() {
+    // Ensure the DevServer is created once.
+    if (this.instance) {
+      this.instance.reload();
 
-    this.instance = browserSync({
+      return;
+    }
+
+    // Save the BrowserSync instance to the class instance.
+    this.instance = browserSync.create('plains');
+
+    // Intialize the DevServer.
+    this.instance.init({
       open: false,
       directory: true,
       port: this.config.port,
       server: this.services.Filesystem.resolveDestination(),
-    })
+    });
   }
 }
 
