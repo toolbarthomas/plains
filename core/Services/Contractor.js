@@ -73,32 +73,23 @@ class Contractor {
    * @param {Object} args Optional function arguments for the defined task.
    */
   async publish(name, ...args) {
-    const queue = name ? name.split(',').filter(t => t.trim()) : false;
-
-    if (Array.isArray(queue)) {
-      // Make sure that all task run in a synchronous order.
-      await queue.reduce(
-        (previousTask, task) =>
-          previousTask.then(async () => {
-            if (!this.tasks[task]) {
-              error(`Task: '${task}' does not exists.`);
-            }
-
-            info(`Starting: ${task}`);
-
-            if (this.tasks[task].options && this.tasks[task].options.async) {
-              await this.tasks[task].fn(args);
-            } else {
-              this.tasks[task].fn(args);
-            }
-
-            success(`Finished: ${task}`);
-          }),
-        Promise.resolve()
-      );
-
-      success('Done');
+    if (typeof name != 'string') {
+      error(`The given task is not valid string`);
     }
+
+    if (!this.tasks[name]) {
+      error(`Task: '${name}' does not exists.`);
+    }
+
+    info(`Starting: ${name}`);
+
+    if (this.tasks[name].options && this.tasks[name].options.async) {
+      await this.tasks[name].fn(args);
+    } else {
+      this.tasks[name].fn(args);
+    }
+
+    success(`Finished: ${name}`);
   }
 
   /**

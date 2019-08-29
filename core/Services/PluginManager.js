@@ -58,8 +58,6 @@ class PluginManager {
       return;
     }
 
-    log('Assigning plugins for', task);
-
     // Expose the subscribed plugins from the assigned task.
     const plugins = this.subscriptions[task];
 
@@ -73,20 +71,16 @@ class PluginManager {
     await queue.reduce(
       (previousInstance, instance) =>
         previousInstance.then(async () => {
-          log('Assigning', instance);
+          log('Starting plugin', instance);
 
           if (this.instances[instance].options && this.instances[instance].options.async) {
             await this.instances[instance].fn(args);
           } else {
             this.instances[instance].fn(args);
           }
-
-          log('Assigned plugin', instance);
         }),
       Promise.resolve()
     );
-
-    log('Plugins assigned for', task);
   }
 
   /**

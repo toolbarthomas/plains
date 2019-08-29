@@ -1,4 +1,4 @@
-const { error, log, warning } = require('./Utils/Logger');
+const { error, log, warning, success } = require('./Utils/Logger');
 
 const Argv = require('./Common/Argv');
 const ConfigLoader = require('./Common/ConfigLoader');
@@ -113,14 +113,18 @@ class Plains {
   /**
    * Initialize Plains.
    */
-  async run() {
+  run() {
     const { task } = this.args;
 
-    // Run the defined task.
-    if (task) {
-      await this.services.Contractor.publish(task);
-      await this.services.PluginManager.publish(task);
-    }
+    task.split(',').filter(t => t.trim()).reduce((previousTask, currentTask) =>
+      previousTask.then(async () => {
+        await this.services.Contractor.publish(currentTask);
+        await this.services.PluginManager.publish(currentTask);
+      }),
+      Promise.resolve()
+    );
+
+    success('Done');
   }
 }
 

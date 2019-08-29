@@ -60,7 +60,7 @@ class ConfigLoader {
          * configuration.
          */
         Object.keys(config).forEach(name => {
-          if (name === 'workers' || (defaults[name] && config[name])) {
+          if (name === 'workers' || name === 'plugins' || (defaults[name] && config[name])) {
             filteredConfig[name] = config[name];
           }
         });
@@ -69,7 +69,7 @@ class ConfigLoader {
         // Validates each entry within the current (sub)configuration Object.
         Object.keys(defaults).forEach(name => {
           // Ignore worker configuration in order to support external workers.
-          if (name === 'workers') {
+          if (name === 'workers' || name === 'plugins') {
             mergedConfig[name] = Object.assign(this.defaults[name], config[name]);
             // mergedConfig[name][option] = config;
           } else {

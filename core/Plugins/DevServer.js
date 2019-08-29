@@ -4,20 +4,23 @@ class DevServer {
   constructor(services) {
     this.services = services;
     this.name = 'serve';
-    this.machineName = 'Devserver';
+    this.machineName = 'DevServer';
     this.config = {};
   }
 
   mount() {
-    this.config = this.services.Store.get('plains', 'plugins')
+    this.config = this.services.Store.get('plains', 'plugins')[this.machineName];
 
-    this.services.PluginManager.subscribe('DevServer', this.init.bind(this));
+    this.services.PluginManager.subscribe(this.machineName, this.init.bind(this));
   }
 
   init() {
-    browserSync({
+    return;
+
+    this.instance = browserSync({
       open: false,
-      port: this.services.Store.get('plains'),
+      directory: true,
+      port: this.config.port,
       server: this.services.Filesystem.resolveDestination(),
     })
   }

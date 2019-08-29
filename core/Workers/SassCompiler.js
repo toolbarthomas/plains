@@ -35,13 +35,13 @@ class SassCompiler {
     // @TODO include support for config entries
     this.services.Filesystem.insertEntry(this.machineName, this.config.entry);
 
-    // Register the Sasscompiler to the common Plains.
-    this.services.PluginManager.subscribe(this.machineName, [
-      'DevServer'
-    ]);
-
     // Expose the SassCompiler worker task.
     this.services.Contractor.subscribe(this.taskName, this.init.bind(this), true);
+
+    // Assign the plugins for the SassCompiler
+    this.services.PluginManager.assign(this.taskName, [
+      'DevServer',
+    ]);
   }
 
   /**
