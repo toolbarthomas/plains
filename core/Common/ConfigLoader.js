@@ -1,20 +1,15 @@
-/* eslint no-else-return: "error" */
-
 const { load } = require('module-config-loader');
+const { resolve } = require('path');
 
 class ConfigLoader {
   constructor(config) {
+
     /**
      * Defines the default configuration Object for Plains.
      * The configuration will be used if it has not been adjusted by the custom
      * configuration.
      */
-    this.defaults = {
-      src: './src', // Defines the source path for Plains.
-      dist: './dist', // Defines the Plains destination path.
-      devMode: true,
-      workers: {},
-    };
+    this.defaults = load(resolve(__dirname, '../plains.default.config.js'));
 
     /**
      * Stores the application configuration that has been defined within the
