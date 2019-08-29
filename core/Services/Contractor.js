@@ -39,7 +39,7 @@ class Contractor {
             this.tasks[name].reject = reject;
 
             await handler();
-          });
+          }).catch(exception => exception);
         };
 
         this.tasks[name].options.async = true;
