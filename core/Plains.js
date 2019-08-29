@@ -1,10 +1,11 @@
-const { error, log } = require('./Utils/Logger');
+const { error, log, warning } = require('./Utils/Logger');
 
 const Argv = require('./Common/Argv');
 const ConfigLoader = require('./Common/ConfigLoader');
 
 const Contractor = require('./Services/Contractor');
 const Filesystem = require('./Services/Fileystem');
+const PluginManager = require('./Services/PluginManager');
 const Store = require('./Services/Store');
 
 const Cleaner = require('./Workers/Cleaner');
@@ -80,35 +81,33 @@ class Plains {
     this.services.Filesystem.defineDestination(this.config.dist);
 
     // Mount the common workers for the application so it can be initiated.
-    Object.keys(this.workers).forEach(name => {
-      const worker = this.workers[name] || false;
-
-      if (!worker) {
-        error(`Unable to mount undefined worker: ${name}`);
-      }
-
-      if (typeof worker['mount'] !== 'function') {
-        error(`No mount method has been defined for worker: ${name}`);
-      }
-
-      log('Mounting worker', name);
-
-      // Exposes each worker logic into the Plains services.
-      worker.mount();
-    });
+    Plains.mount(this.workers, 'worker');
 
     // Mount the environment specific plugins.
-    Object.keys(this.plugins).forEach(name => {
-      const plugin = this.plugins[name];
+    Plains.mount(this.plugins, 'worker');
+  }
 
-      if (typeof plugin['mount'] !== 'function') {
-        return;
-      }
+  /**
+   * Pattern for mounting the Plains builder classes.
+   */
+  static mount(instances, type) {
+    if (instances instanceof Object) {
+      Object.keys(instances).forEach(name => {
+        const instance = instances[name];
 
-      log('Mounting plugin', name);
+        if (!instance) {
+          error(`Unable to mount undefined ${type}: ${name}`);
+        }
 
-      plugin.mount();
-    });
+        if (typeof instance['mount'] !== 'function') {
+          error(`No mount method has been defined for ${type}: ${name}`);
+        }
+
+        log('Mounting ${type}', name);
+
+        instance.mount();
+      });
+    }
   }
 
   /**
@@ -120,17 +119,10 @@ class Plains {
     // Run the defined task.
     if (task) {
       await this.services.Contractor.publish(task);
+      await this.services.PluginManager.publish(task);
     }
 
-    Object.keys(this.plugins).forEach(name => {
-      const plugin = this.plugins[name];
-
-      if (typeof plugin['mount'] !== 'function') {
-        return;
-      }
-
-      plugin.mount();
-    });
+    console.log('await run');
   }
 }
 
