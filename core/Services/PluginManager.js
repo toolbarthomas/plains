@@ -1,35 +1,156 @@
-const { log } = require('../Utils/Logger');
+const { error, info, log, success } = require('../Utils/Logger');
 
 class PluginManager {
   constructor() {
-    this.plugins = {};
+    // Object that holds all the plugin subscription instances.
+    this.instances = {};
+
+    // Objects that holds all the subscribed task that will mount any plugins.
+    this.subscriptions = {};
   }
 
   /**
-   * Subscribe a worker to the Plains plugin in order to know which plugin
-   * should be ran after the task has been run.
-   *
-   * @param {String} worker The worker that will be subscribed
-   * @param {String|Array} plugins Define one or more plugins to subscribe
-   * to the defined worker.
+   * Subscribe the plugin to the PluginManager instance.
    */
-  subscribe(worker, plugins) {
-    // Make sure we can iterate trough the defined plugins
-    const pluginSubscription = (Array.isArray(plugins) ? plugins : [plugins]);
+  subscribe(plugin, handler, async) {
+    if (this.instances[plugin]) {
+      log(`${plugin} has already been subscribed.`);
+      return;
+    }
 
-    // Subsribe the worker to defined plugins.
-    pluginSubscription.forEach(plugin => {
-      if (!this.plugins[plugin] || !Array.isArray(this.plugins[plugin])) {
-        this.plugins[plugin] = [];
+    // Ensure that the subscribed  has an actual handler
+    if (typeof handler != 'function') {
+      error(`The defined for ${plugin} handler is not a function.`)
+    }
+
+    this.instances[plugin] = {
+      fn: null,
+      options: {},
+    };
+
+    if (async) {
+      this.instances[plugin].fn = () => {
+        return new Promise(async (resolve, reject) => {
+          this.instances[plugin].resolve = resolve;
+          this.instances[plugin].reject = reject;
+
+          await handler();
+        }).catch(exception => exception)
       }
 
-      // Make sure the actual worker will only registerd once to a plugin.
-      this.plugins[plugin] = this.plugins[plugin]
-        .filter(item => this.plugins[plugin][worker] != worker)
-        .concat(worker);
+      this.instances[plugin].options.async = true;
+    } else {
+      this.instances[plugin].fn = handler;
+    }
 
-      log(`Subscribed ${worker} to`, plugin);
+    log('Plugin subscribed', plugin);
+  }
+
+  /**
+   * Initiate the subscribed plugins from the assigned task.
+   *
+   * @param {String} task The task to get the subscribed plugins from.
+   */
+  async publish(task, ...args) {
+    console.log(task);
+
+    // Ensure the actual task has been assigned by the PluginManager.
+    if (!this.subscriptions[task]) {
+      log(`No plugins have been defined for`, task);
+      return;
+    }
+
+    log('Assigning plugins for', task);
+
+    // Expose the subscribed plugins from the assigned task.
+    const plugins = this.subscriptions[task];
+
+    // Ensure that the assigned task has any plugins defined.
+    if (!plugins || !plugins.length) {
+      error(`${task} has no subscribed plugins.`);
+    }
+
+    const queue = Object.keys(this.instances);
+
+    console.log(queue);
+
+    queue.reduce(
+      (previousInstance, instance) =>
+        previousInstance.then(async () => {
+          log('Assigning', instance);
+
+          if (this.instances[instance].options && this.instances[instance].options.async) {
+            await this.instances[instance].fn(args);
+          } else {
+            this.instances[instance].fn(args);
+          }
+
+          log('Assigned', instance);
+        }),
+      Promise.resolve()
+    );
+
+    log('Plugins assigned for', task);
+  }
+
+  /**
+   * Assigns the defined plugins to the defined task.
+   *
+   * @param {String} task The actual task to assign the plugin from.
+   * @param {String|Array} plugins The subscribed plugins to assign
+   * to the given task.
+   */
+  assign(task, plugins) {
+    const instance = this.subscriptions[task] || [];
+
+    const assignee = Array.isArray(plugins)
+      ? plugins
+      : [plugins];
+
+    // Ensure that the plugin is not assigned twice.
+    assignee.forEach(plugin => {
+      if (instance.indexOf(plugin) >= 0) {
+        return;
+      }
+
+      instance.push(plugin);
     });
+
+    // Assign the plugins to the current task.
+    this.subscriptions[task] = instance;
+
+    return instance;
+  }
+
+
+  /**
+   * Resolves the defined Promise Object if the given plugin has been
+   * subscribed as an asyncronous plugin.
+   *
+   * @param {String} plugin The plugin that should be resolved.
+   * @param {Object} args Optional arguments for the actual resolved Promise.
+   */
+  resolve(plugin, ...args) {
+    if (!this.instances[plugin] || !this.instances[plugin].resolve) {
+      warning(`Task '${plugin}' is synchronous and won't be resolved.`);
+    } else {
+      this.instances[plugin].resolve(...args);
+    }
+  }
+
+  /**
+   * Rejects the defined Promise Object if the given plugin has been
+   * subscribed as an asynchronous plugin.
+   *
+   * @param {String} plugin The plugin that should be rejected.
+   * @param {Object} args Optional arguments for the actual rejected Promise.
+   */
+  reject(plugin, ...args) {
+    if (!this.instances[plugin].resolve) {
+      warning(`Task '${plugin}' is synchronous and won't be rejected.`);
+    } else {
+      this.instances[plugin].reject(...args);
+    }
   }
 }
 
