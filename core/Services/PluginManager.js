@@ -52,8 +52,6 @@ class PluginManager {
    * @param {String} task The task to get the subscribed plugins from.
    */
   async publish(task, ...args) {
-    console.log(task);
-
     // Ensure the actual task has been assigned by the PluginManager.
     if (!this.subscriptions[task]) {
       log(`No plugins have been defined for`, task);
@@ -72,9 +70,7 @@ class PluginManager {
 
     const queue = Object.keys(this.instances);
 
-    console.log(queue);
-
-    queue.reduce(
+    await queue.reduce(
       (previousInstance, instance) =>
         previousInstance.then(async () => {
           log('Assigning', instance);
@@ -85,7 +81,7 @@ class PluginManager {
             this.instances[instance].fn(args);
           }
 
-          log('Assigned', instance);
+          log('Assigned plugin', instance);
         }),
       Promise.resolve()
     );

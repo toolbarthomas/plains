@@ -11,7 +11,7 @@ const Store = require('./Services/Store');
 const Cleaner = require('./Workers/Cleaner');
 const SassCompiler = require('./Workers/SassCompiler');
 
-const Server = require('./Plugins/Server');
+const DevServer = require('./Plugins/DevServer');
 
 /**
  * Implements the core functionality for Plains.
@@ -51,7 +51,7 @@ class Plains {
      * for development and minification for production.
      */
     this.plugins = {
-      Server: new Server(this.services)
+      DevServer: new DevServer(this.services)
     }
   }
 
@@ -103,7 +103,7 @@ class Plains {
           error(`No mount method has been defined for ${type}: ${name}`);
         }
 
-        log('Mounting ${type}', name);
+        log(`Mounting ${type}`, name);
 
         instance.mount();
       });
@@ -121,8 +121,6 @@ class Plains {
       await this.services.Contractor.publish(task);
       await this.services.PluginManager.publish(task);
     }
-
-    console.log('await run');
   }
 }
 
