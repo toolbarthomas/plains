@@ -5,10 +5,13 @@ module.exports = {
   src: './src',
   dist: './dist',
   devMode: true,
+  watch: true,
   plugins: {
     DevServer: {
       port: 8080,
     }
   },
-  workers: {},
+  workers: {
+    sass: {}
+  },
 }

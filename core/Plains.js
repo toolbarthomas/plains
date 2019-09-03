@@ -2,16 +2,15 @@ const { error, log, warning, success } = require('./Utils/Logger');
 
 const Argv = require('./Common/Argv');
 const ConfigLoader = require('./Common/ConfigLoader');
+const ServiceAdapter = require('./Common/ServiceAdapter');
 
 const Contractor = require('./Services/Contractor');
 const Filesystem = require('./Services/Fileystem');
-const PluginManager = require('./Services/PluginManager');
 const Store = require('./Services/Store');
+const Watcher = require('./Services/Watcher');
 
 const Cleaner = require('./Workers/Cleaner');
 const SassCompiler = require('./Workers/SassCompiler');
-
-const DevServer = require('./Plugins/DevServer');
 
 /**
  * Implements the core functionality for Plains.
@@ -33,8 +32,9 @@ class Plains {
     this.services = {
       Contractor: new Contractor(),
       Filesystem: new Filesystem(),
-      PluginManager: new PluginManager(),
+      // PluginManager: new PluginManager(),
       Store: new Store(),
+      Watcher: new Watcher(),
     };
 
     /**
@@ -45,14 +45,6 @@ class Plains {
       Cleaner: new Cleaner(this.services),
       SassCompiler: new SassCompiler(this.services),
     };
-
-    /**
-     * Plugins provides environment specific functionalities like a devServer
-     * for development and minification for production.
-     */
-    this.plugins = {
-      DevServer: new DevServer(this.services)
-    }
   }
 
   /**
@@ -81,16 +73,15 @@ class Plains {
     this.services.Filesystem.defineDestination(this.config.dist);
 
     // Mount the common workers for the application so it can be initiated.
-    Plains.mount(this.workers, 'worker');
-
-    // Mount the environment specific plugins.
-    Plains.mount(this.plugins, 'worker');
+    Plains.mount(this.workers);
   }
 
   /**
-   * Pattern for mounting the Plains builder classes.
+   * Mounts each instance that.
+   *
+   * @param {Object} instances Object with instances that will be mounted.
    */
-  static mount(instances, type) {
+  static mount(instances) {
     if (instances instanceof Object) {
       Object.keys(instances).forEach(name => {
         const instance = instances[name];
@@ -100,10 +91,10 @@ class Plains {
         }
 
         if (typeof instance['mount'] !== 'function') {
-          error(`No mount method has been defined for ${type}: ${name}`);
+          error(`No mount method has been defined for ${name}`);
         }
 
-        log(`Mounting ${type}`, name);
+        log('Mounting', name);
 
         instance.mount();
       });
@@ -116,15 +107,21 @@ class Plains {
   async run() {
     const { task } = this.args;
 
-    await task.split(',').filter(t => t.trim()).reduce((previousTask, currentTask) =>
-      previousTask.then(async () => {
-        await this.services.Contractor.publish(currentTask);
-        await this.services.PluginManager.publish(currentTask);
-      }),
-      Promise.resolve()
-    );
+    // Sass -> Run
+    // Watch ->
 
-    success('Done.');
+    if (task) {
+      await this.services.Contractor.run(task);
+    }
+  }
+
+  /**
+   * Enables the Plains watcher.
+   */
+  watch() {
+    const stacks = this.services.Filesystem.source();
+
+    console.log(Object.keys(stacks));
   }
 }
 

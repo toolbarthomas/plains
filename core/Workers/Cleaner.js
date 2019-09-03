@@ -19,7 +19,7 @@ class Cleaner {
    * Subscribes the cleaner worker to Plains.
    */
   mount() {
-    this.services.Contractor.subscribe(this.taskName, this.init.bind(this), true);
+    this.services.Contractor.subscribe('clean', this.init.bind(this), true);
   }
 
   /**

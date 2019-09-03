@@ -87,41 +87,29 @@ class Filesystem {
    * stack, if the stack argument exists within the Filesystem instance.
    *
    * @param {String} stack Returns the actual stack collection if it exists;
-   * @param {Function} callback The function to call within each stack iteration.
    *
    * @returns {Object} The selected Stack with all the defined entries.
    */
-  source(stack, callback) {
-    let map = [];
+  source(stack) {
+    let map = {};
 
     // Throw an Exception if the requested stack does not exists.
     if (stack && !this.hasStack(stack)) {
       error(`Stack: ${stack} does not exists within the Filesystem instance.`);
     }
 
-    if (stack && this.hasStack(stack)) {
-      const entries = this.stacks.get(stack);
-
-      entries.forEach(entry => {
-        map = map.filter(item => entry !== item).concat(entry);
-      });
+    if (stack) {
+      map[stack] = this.stacks.get(stack).filter(item => (item instanceof Object) && existsSync(item.path))
+      // entries.forEach(entry => {
+      //   map = map.filter(item => entry !== item).concat(entry);
+      // });
     } else {
-      this.stacks.forEach(entries => {
-        entries.forEach(entry => {
-          map = map.filter(item => entry !== item).concat(entry);
-        });
+      this.stacks.forEach((value, key) => {
+        map[key] = value.filter(item => (item instanceof Object) && existsSync(item.path));
       });
     }
 
-    return map.map((item) => {
-      if (typeof callback === 'function') {
-        callback(item);
-      }
-
-      if (item instanceof Object && existsSync(item.path)) {
-        return item;
-      }
-    });
+    return map;
   }
 
   /**
@@ -155,7 +143,7 @@ class Filesystem {
    * @param {String} entries The defined entry paths.
    */
   insertEntry(stack, entries) {
-    if (!this.hasStack(stack)) {
+    if (!this.hasStack(stack) || !entries) {
       return false;
     }
 

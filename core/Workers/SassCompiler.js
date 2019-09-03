@@ -9,8 +9,7 @@ const { error, info, log, success, warning } = require('../Utils/Logger');
 class SassCompiler {
   constructor(services) {
     this.services = services;
-    this.taskName = 'sass';
-    this.machineName = 'sassCompiler';
+    this.task = 'sass';
 
     // Keep track of the compilation & linting errors and output it to the user.
     this.exceptions = {
@@ -23,25 +22,23 @@ class SassCompiler {
     }
   }
 
+  /**
+   * Prepare the SassCompiler instance.
+   */
   mount() {
     // Get the specific sassCompiler configuraiton that has been defined
     // by the ConfigManager service.
-    this.config = this.services.Store.get('plains', 'workers')[this.machineName] || {};
+    this.config = this.services.Store.get('plains', 'workers')[this.task] || {};
 
     // Create a new Filesystem stack to define the sass entry files.
-    this.services.Filesystem.createStack(this.machineName);
+    this.services.Filesystem.createStack(this.task);
 
     // Defines the actual Sass entry files that are defined within the configuration.
-    // @TODO include support for config entries
-    this.services.Filesystem.insertEntry(this.machineName, this.config.entry);
+    // @TODO include support for config entries.
+    this.services.Filesystem.insertEntry(this.task, this.config.entry);
 
-    // Expose the SassCompiler worker task.
-    this.services.Contractor.subscribe(this.taskName, this.init.bind(this), true);
-
-    // Assign the plugins for the SassCompiler
-    this.services.PluginManager.assign(this.taskName, [
-      'DevServer',
-    ]);
+    // Subscribe the SassCompiler as Contractor task.
+    this.services.Contractor.subscribe(this.task, this.init.bind(this), true, true);
   }
 
   /**
@@ -50,7 +47,7 @@ class SassCompiler {
   async init() {
     // Get the defined entry file.
     // @todo check if there is an entry file defined within the wachter queue.
-    const entries = this.services.Filesystem.source(this.machineName);
+    const entries = this.services.Filesystem.source(this.task);
 
     // Process each entry in parallel order.
     const compiler = entries.map(async (entry) => {
@@ -64,8 +61,10 @@ class SassCompiler {
     // exception are not directly visible within the shell.
     this.outputExceptions();
 
-    // Resolve the task.
-    this.services.Contractor.resolve(this.taskName);
+    setTimeout(() => {
+      console.log('Resolve SassCompiler');
+      this.services.Contractor.resolve(this.taskName);
+    }, 10000);
   }
 
   /**
