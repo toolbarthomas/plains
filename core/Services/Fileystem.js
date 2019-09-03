@@ -90,8 +90,8 @@ class Filesystem {
    *
    * @returns {Object} The selected Stack with all the defined entries.
    */
-  source(stack) {
-    let map = {};
+  getStack(stack) {
+    let map = new Map();
 
     // Throw an Exception if the requested stack does not exists.
     if (stack && !this.hasStack(stack)) {
@@ -99,18 +99,36 @@ class Filesystem {
     }
 
     if (stack) {
-      map[stack] = this.stacks.get(stack).filter(item => (item instanceof Object) && existsSync(item.path))
-      // entries.forEach(entry => {
-      //   map = map.filter(item => entry !== item).concat(entry);
-      // });
+      map.set(stack, this.stacks.get(stack));
     } else {
       this.stacks.forEach((value, key) => {
-        map[key] = value.filter(item => (item instanceof Object) && existsSync(item.path));
+        map.set(key, value);
       });
     }
 
     return map;
   }
+
+  /**
+   * Returns an array with all entry paths from the defined stack;
+   *
+   * @param {String} name
+   */
+  sources(name) {
+    if (!name || !this.hasStack(name)) {
+      error(`Stack: ${name} does not exists within the Filesystem instance.`);
+    }
+
+    const entries = [];
+    this.source(name).forEach((stack) => {
+      stack.forEach(entry => {
+        entries.push(entry.path);
+      });
+    });
+
+    return entries;
+  }
+
 
   /**
    * Helper function to check if the given stack exists.

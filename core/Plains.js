@@ -2,15 +2,15 @@ const { error, log, warning, success } = require('./Utils/Logger');
 
 const Argv = require('./Common/Argv');
 const ConfigLoader = require('./Common/ConfigLoader');
-const ServiceAdapter = require('./Common/ServiceAdapter');
 
 const Contractor = require('./Services/Contractor');
 const Filesystem = require('./Services/Fileystem');
 const Store = require('./Services/Store');
-const Watcher = require('./Services/Watcher');
 
 const Cleaner = require('./Workers/Cleaner');
 const SassCompiler = require('./Workers/SassCompiler');
+
+const Watcher = require('./Plugins/Watcher');
 
 /**
  * Implements the core functionality for Plains.
@@ -34,7 +34,6 @@ class Plains {
       Filesystem: new Filesystem(),
       // PluginManager: new PluginManager(),
       Store: new Store(),
-      Watcher: new Watcher(),
     };
 
     /**
@@ -45,6 +44,14 @@ class Plains {
       Cleaner: new Cleaner(this.services),
       SassCompiler: new SassCompiler(this.services),
     };
+
+    /**
+     * Plugins are simple wrappers that enable communication
+     * between Services.
+     */
+    this.plugins = {
+      Watcher: new Watcher(this.services)
+    }
   }
 
   /**
@@ -112,16 +119,9 @@ class Plains {
 
     if (task) {
       await this.services.Contractor.run(task);
+
+      this.plugins.Watcher.init();
     }
-  }
-
-  /**
-   * Enables the Plains watcher.
-   */
-  watch() {
-    const stacks = this.services.Filesystem.source();
-
-    console.log(Object.keys(stacks));
   }
 }
 
