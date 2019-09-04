@@ -47,7 +47,7 @@ class SassCompiler {
   async init() {
     // Get the defined entry file.
     // @todo check if there is an entry file defined within the wachter queue.
-    const entries = this.services.Filesystem.source(this.task);
+    const entries = this.services.Filesystem.getStack(this.task);
 
     // Process each entry in parallel order.
     const compiler = entries.map(async (entry) => {
@@ -61,10 +61,7 @@ class SassCompiler {
     // exception are not directly visible within the shell.
     this.outputExceptions();
 
-    setTimeout(() => {
-      console.log('Resolve SassCompiler');
-      this.services.Contractor.resolve(this.taskName);
-    }, 10000);
+    this.services.Contractor.resolve(this.task);
   }
 
   /**

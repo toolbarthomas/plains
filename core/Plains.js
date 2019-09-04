@@ -79,8 +79,14 @@ class Plains {
     // Defines the destination path where the processed entries will be written to.
     this.services.Filesystem.defineDestination(this.config.dist);
 
+    // Assign the actual task to Contractor
+    this.services.Contractor.defineTaskQueue(this.args.task);
+
     // Mount the common workers for the application so it can be initiated.
     Plains.mount(this.workers);
+
+    // Mount the common plugins
+    Plains.mount(this.plugins);
   }
 
   /**
@@ -118,9 +124,8 @@ class Plains {
     // Watch ->
 
     if (task) {
-      await this.services.Contractor.run(task);
-
-      this.plugins.Watcher.init();
+      await this.services.Contractor.run();
+      this.plugins.Watcher.run();
     }
   }
 }

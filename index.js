@@ -4,7 +4,7 @@ const App = new Plains({
   workers: {
     sass: {
       entry: [
-        'base/stylesheets/*.scss',
+        'base/stylesheets/index.scss',
       ],
     }
   }

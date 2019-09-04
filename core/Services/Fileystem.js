@@ -91,20 +91,39 @@ class Filesystem {
    * @returns {Object} The selected Stack with all the defined entries.
    */
   getStack(stack) {
-    let map = new Map();
-
     // Throw an Exception if the requested stack does not exists.
     if (stack && !this.hasStack(stack)) {
       error(`Stack: ${stack} does not exists within the Filesystem instance.`);
     }
 
-    if (stack) {
-      map.set(stack, this.stacks.get(stack));
-    } else {
-      this.stacks.forEach((value, key) => {
-        map.set(key, value);
-      });
-    }
+    return this.stacks.get(stack);
+  }
+
+  /**
+   * Returns an array with paths of the defined stack entries.
+   *
+   * @param {String} stack Resolves the paths for the selected stack.
+   *
+   * @returns {Array} Returns an array with resolved directories.
+   */
+  getStackDirectories(stack) {
+    const initialStack = this.getStack(stack);
+
+    let map = [];
+
+    initialStack.forEach(item => {
+      const { cwd, entry } = item;
+
+      if (!entry) {
+        return;
+      }
+
+      const directory = join(cwd, dirname(entry));
+
+      if (entry && map.indexOf(directory) < 0) {
+        map.push(directory);
+      }
+    });
 
     return map;
   }
@@ -114,19 +133,26 @@ class Filesystem {
    *
    * @param {String} name
    */
-  sources(name) {
+  source(name) {
     if (!name || !this.hasStack(name)) {
       error(`Stack: ${name} does not exists within the Filesystem instance.`);
     }
 
+    // Prepare the Array which stores all defined stack paths.
     const entries = [];
-    this.source(name).forEach((stack) => {
-      stack.forEach(entry => {
-        entries.push(entry.path);
-      });
+
+    this.getStack(name).forEach(entry => {
+      entries.push(entry.path);
     });
 
     return entries;
+  }
+
+  /**
+   * Returns an array with all subscribed stack names.
+   */
+  list() {
+    return [...this.stacks.keys()];
   }
 
 

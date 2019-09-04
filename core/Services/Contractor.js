@@ -8,6 +8,31 @@ class Contractor {
   constructor() {
     // Map with all the worker subscriptions.
     this.tasks = new Map();
+    this.task = false;
+  }
+
+  /**
+   * Assigns the given tasks that have been defined by the Plains instance.
+   *
+   * @param {String|Array} task The task(s) to assign to the Contractor instance.
+   */
+  defineTaskQueue(task) {
+    const queue = task.split(',').filter(t => t.trim());
+
+    this.task = queue.filter(
+      (initialTask, index) => queue.indexOf(initialTask) === index
+    );
+  }
+
+  /**
+   * Returns an Array of the defined task queue.
+   */
+  getTaskQueue() {
+    if (!this.task) {
+      error('No task has been defined to the Contractor instance.');
+    }
+
+    return this.task;
   }
 
   /**
@@ -105,15 +130,12 @@ class Contractor {
    *
    * @param {String|Array} task The subscribed tasks that will be published.
    */
-  async run(task) {
-    if (!task) {
-      error('No task has been defined');
+  async run() {
+    if (!this.task) {
+      error(`No task has been defined for the the current Plains Instance`);
     }
 
-    // Remove any whitespace for each task.
-    const queue = task.split(',').filter(t => t.trim());
-
-    await queue.filter((instance, index) => queue.indexOf(instance) === index).reduce(
+    await this.task.reduce(
       (previousInstance, currentInstance) =>
         previousInstance.then(async () => {
           await this.publish(currentInstance);
