@@ -185,7 +185,10 @@ class Store {
 
     if (store) {
       if (typeof entry === 'string') {
-        this.buckets.get(name).get('state').delete(entry);
+        this.buckets
+          .get(name)
+          .get('state')
+          .delete(entry);
 
         log('Store updated', `Removed '${entry}' from ${name}`);
       } else {

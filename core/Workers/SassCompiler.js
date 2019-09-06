@@ -1,6 +1,6 @@
 const { render } = require('node-sass');
 const globImporter = require('node-sass-glob-importer');
-const { error, info, log, success, warning } = require('../Utils/Logger');
+const { error, info, success, warning } = require('../Utils/Logger');
 
 /**
  * Core worker for Plains that compiles Sass files to stylesheets with optional
@@ -19,7 +19,7 @@ class SassCompiler {
     // @TODO use defaults object for worker to validate the actual worker configuration.
     this.defaults = {
       entry: [],
-    }
+    };
   }
 
   /**
@@ -50,7 +50,7 @@ class SassCompiler {
     const entries = this.services.Filesystem.getStack(this.task);
 
     // Process each entry in parallel order.
-    const compiler = entries.map(async (entry) => {
+    const compiler = entries.map(async entry => {
       await this.processEntry(entry);
     });
 
@@ -70,37 +70,39 @@ class SassCompiler {
    * @param {String} entry The path of the current entry that will be processed.
    */
   processEntry(entry) {
-    return new Promise((cb) => {
+    return new Promise(cb => {
       info(`Render sass entry: ${entry.path}`);
 
-      render({
-        file: entry.path,
-        outputStyle: 'compact',
-        importer: globImporter(),
-        includePaths: [this.services.Filesystem.resolveSource()],
-        outFile: this.services.Filesystem.resolveEntryPath(entry, '{name}.css'),
-        sourceMap: this.services.Store.get('plains', 'devMode'),
-      }, async (exception, chunk) => {
-        if (exception) {
-          // Store the exception of the current entry since it encountered CSS
-          // errors.
-          this.exceptions.sass.push({
-            file: exception.file,
-            line: exception.line,
-            column: exception.column,
-            message: exception.message
-          });
-
-          cb();
-        } else {
-          this.services.Filesystem.writeFiles(
-            [entry, chunk.css, '{name}.css'],
-            [entry, chunk.map, '{name}.css.map'],
-          ).then(() => {
+      render(
+        {
+          file: entry.path,
+          outputStyle: 'compact',
+          importer: globImporter(),
+          includePaths: [this.services.Filesystem.resolveSource()],
+          outFile: this.services.Filesystem.resolveEntryPath(entry, '{name}.css'),
+          sourceMap: this.services.Store.get('plains', 'devMode'),
+        },
+        async (exception, chunk) => {
+          if (exception) {
+            // Store the exception of the current entry since it encountered CSS
+            // errors.
+            this.exceptions.sass.push({
+              file: exception.file,
+              line: exception.line,
+              column: exception.column,
+              message: exception.message,
+            });
             cb();
-          });
+          } else {
+            this.services.Filesystem.writeFiles(
+              [entry, chunk.css, '{name}.css'],
+              [entry, chunk.map, '{name}.css.map']
+            ).then(() => {
+              cb();
+            });
+          }
         }
-      });
+      );
     });
   }
 
@@ -112,10 +114,10 @@ class SassCompiler {
     if (this.exceptions && this.exceptions.sass.length) {
       // Output the encountered syntax errors.
       this.exceptions.sass.forEach(exception => {
-        error([
-          `Error at: ${exception.file}:${exception.line}:${exception.column}`,
-          exception.message,
-        ], true);
+        error(
+          [`Error at: ${exception.file}:${exception.line}:${exception.column}`, exception.message],
+          true
+        );
       });
 
       if (this.services.Store.get('plains', 'devMode')) {
@@ -126,7 +128,7 @@ class SassCompiler {
 
       this.exceptions.sass = [];
     } else {
-      success('Successfully compiled all entries without any errors.')
+      success('Successfully compiled all entries without any errors.');
     }
   }
 }

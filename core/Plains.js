@@ -1,4 +1,4 @@
-const { error, log, warning, success } = require('./Utils/Logger');
+const { error, log } = require('./Utils/Logger');
 
 const Argv = require('./Common/Argv');
 const ConfigLoader = require('./Common/ConfigLoader');
@@ -50,8 +50,8 @@ class Plains {
      * between Services.
      */
     this.plugins = {
-      Watcher: new Watcher(this.services)
-    }
+      Watcher: new Watcher(this.services),
+    };
   }
 
   /**
@@ -100,10 +100,10 @@ class Plains {
         const instance = instances[name];
 
         if (!instance) {
-          error(`Unable to mount undefined ${type}: ${name}`);
+          error(`Unable to mount undefined: ${name}`);
         }
 
-        if (typeof instance['mount'] !== 'function') {
+        if (typeof instance.mount !== 'function') {
           error(`No mount method has been defined for ${name}`);
         }
 

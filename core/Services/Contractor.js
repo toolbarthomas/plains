@@ -1,4 +1,4 @@
-const { error, info, log, success } = require('../Utils/Logger');
+const { error, info, log, success, warning } = require('../Utils/Logger');
 
 /**
  * Contractor is an Observer class that holds all the worker that will be used
@@ -19,9 +19,7 @@ class Contractor {
   defineTaskQueue(task) {
     const queue = task.split(',').filter(t => t.trim());
 
-    this.task = queue.filter(
-      (initialTask, index) => queue.indexOf(initialTask) === index
-    );
+    this.task = queue.filter((initialTask, index) => queue.indexOf(initialTask) === index);
   }
 
   /**
@@ -56,16 +54,17 @@ class Contractor {
     // Subscribe the new Worker.
     this.tasks[name] = {
       async: async || false,
-      handler: !async ? handler : () => (
-        new Promise(async (resolve, reject) => {
-          this.tasks[name].resolve = resolve;
-          this.tasks[name].reject = reject;
+      handler: !async
+        ? handler
+        : () =>
+          new Promise((resolve, reject) => {
+            this.tasks[name].resolve = resolve;
+            this.tasks[name].reject = reject;
 
-          await handler();
-        }).catch(exception => exception)
-      ),
+            handler();
+          }).catch(exception => exception),
       watch: watch || false,
-    }
+    };
 
     log('Subscribed task', name);
   }
@@ -85,7 +84,6 @@ class Contractor {
 
     if (this.tasks[name].async) {
       await this.tasks[name].handler(args);
-
     } else {
       this.tasks[name].handler(args);
     }

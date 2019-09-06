@@ -1,5 +1,5 @@
 const chokidar = require('chokidar');
-const { error, log } = require('../Utils/Logger');
+const { error, log, warning } = require('../Utils/Logger');
 
 class Watcher {
   constructor(services) {
@@ -26,7 +26,7 @@ class Watcher {
     // Define the actual instance for each task.
     stacks.forEach(stack => {
       if (this.watchers[stack] && this.watchers[stack] instanceof Object) {
-        error(`The Watcher plugin already has been defined for ${stack}`)
+        error(`The Watcher plugin already has been defined for ${stack}`);
       }
 
       this.watchers[stack] = {
@@ -61,9 +61,8 @@ class Watcher {
 
       // Create the intial Watcher.
       this.watchers[task].instance = chokidar.watch(entries, {
-        ignored: /(^|[\/\\])\../
+        ignored: /(^|[\/\\])\../,
       });
-
 
       this.watchers[task].instance.on('all', (stats, path) => {
         this.resetDelay(task);
@@ -98,7 +97,6 @@ class Watcher {
    */
   defineDelay(task) {
     if (this.watchers[task]) {
-
     }
   }
 

@@ -1,6 +1,6 @@
 const { existsSync, writeFile } = require('fs');
 const { sync } = require('glob');
-const { basename, dirname, extname, join, parse, relative, resolve, sep } = require('path');
+const { basename, dirname, extname, join, relative, resolve, sep } = require('path');
 const mkdirp = require('mkdirp');
 const { error, log, warning, success } = require('../Utils/Logger');
 const { flatten } = require('../Utils/Tools');
@@ -24,7 +24,7 @@ class Filesystem {
    */
   defineRoot(path) {
     if (!existsSync(path)) {
-      error(`The given root path does not exists for: ${path}`);
+      error(`The given root path does not exists: ${path}`);
     }
 
     this.src = resolve(path);
@@ -47,7 +47,7 @@ class Filesystem {
       if (!existsSync(this.dist)) {
         log(`Creating destination folder: ${this.dist}`);
 
-        mkdirp(this.dist)
+        mkdirp(this.dist);
       }
     }
   }
@@ -66,16 +66,15 @@ class Filesystem {
   }
 
   /**
-   * Returns the destination path where all entry file will be written to.
+   * Returns the base destination directory.
    *
-   * @returns {String} Returns the destination path of dist directory.
+   * @returns {String} Returns the destination path of the dist directory.
    */
   resolveDestination() {
     if (!this.dist) {
       error([
-        `Unable to define the destination for: ${path}`,
         'There is no global destination path defined for the Filesystem service.',
-        'You should define the destination path relative to the working directory of your Nodejs instance.'
+        'You should define the destination path relative to the working directory of your Nodejs instance.',
       ]);
     }
 
@@ -109,7 +108,7 @@ class Filesystem {
   getStackDirectories(stack) {
     const initialStack = this.getStack(stack);
 
-    let map = [];
+    const map = [];
 
     initialStack.forEach(item => {
       const { cwd, entry } = item;
@@ -155,7 +154,6 @@ class Filesystem {
     return [...this.stacks.keys()];
   }
 
-
   /**
    * Helper function to check if the given stack exists.
    *
@@ -172,7 +170,7 @@ class Filesystem {
    */
   createStack(stack) {
     if (this.hasStack(stack)) {
-      warning(`Unable to create stack: ${stack}, it already exists within the Filesystem instance.`);
+      warning(`Stack: ${stack}, has already been created.`);
 
       return;
     }
@@ -185,6 +183,7 @@ class Filesystem {
    *
    * @param {String} stack The name of the stack to insert defined the entry.
    * @param {String} entries The defined entry paths.
+   * @returns Returns the inserted paths if the exists or false if no false have been inserted.
    */
   insertEntry(stack, entries) {
     if (!this.hasStack(stack) || !entries) {
@@ -196,7 +195,7 @@ class Filesystem {
 
     // Normalize the entry declerations and also include the entries with
     // a globbing pattern.
-    const entryCollection = entryArray.map((entry) => {
+    const entryCollection = entryArray.map(entry => {
       let initialEntry = entry;
 
       // Define the relative path of the actual entry.
@@ -211,9 +210,10 @@ class Filesystem {
       }
 
       // Resolve the current entry path(s)
-      const src = entry.indexOf('*') >= 0
-        ? sync(resolve(this.src, initialEntry)).map(glob => resolve(glob))
-        : [resolve(this.src, initialEntry)];
+      const src =
+        entry.indexOf('*') >= 0
+          ? sync(resolve(this.src, initialEntry)).map(glob => resolve(glob))
+          : [resolve(this.src, initialEntry)];
 
       return src;
     });
@@ -225,7 +225,7 @@ class Filesystem {
         cwd: this.src,
         entry: relative(this.src, src),
         dist: this.resolveEntryDestination(src),
-      }
+      };
     });
 
     // Get the defined stack in order to merge the given entries.
@@ -237,16 +237,43 @@ class Filesystem {
         if (!initialStack[entry] && existsSync(entry.path)) {
           return entry;
         }
-        else if (initialStack[entry] && entry.path !== initialStack[entry].path && existsSync(entry.path)) {
-          return entry
-
+        if (
+          initialStack[entry] &&
+          entry.path !== initialStack[entry].path &&
+          existsSync(entry.path)
+        ) {
+          return entry;
         }
+        return null;
       })
       .concat(initialStack);
 
     // Update the stack with the new entries.
     if (newStack.length > 0) {
       this.stacks.set(stack, newStack);
+    }
+
+    return newStack;
+  }
+
+  /**
+   * Returns an exception if the given entry is not according to the
+   * Filesystem schema.
+   *
+   * @param {Object} Entry THe defined entry to validate.
+   */
+  // eslint-disable-next-line class-methods-use-this
+  validateEntry(entry) {
+    if (!(entry instanceof Object)) {
+      error('The defined entry does not match the Filesystem schema.');
+    }
+
+    if (!entry.path) {
+      error('The current entry has no source path defined.');
+    }
+
+    if (!entry.dist) {
+      error('The current entry has no destination path defined.');
     }
   }
 
@@ -269,16 +296,16 @@ class Filesystem {
 
         cb();
       } else {
-        mkdirp(dirname(resourceDestination), (err) => {
+        mkdirp(dirname(resourceDestination), err => {
           if (err) {
             error(err);
           }
 
           log('Creating resource', resourceDestination);
 
-          writeFile(resourceDestination, data, (err) => {
-            if (err) {
-              error(err);
+          writeFile(resourceDestination, data, err2 => {
+            if (err2) {
+              error(err2);
             }
 
             success(`Resource created: ${resourceDestination}`);
@@ -304,19 +331,17 @@ class Filesystem {
     const queue = items.map(item => {
       if (typeof item === 'function') {
         return item;
-      } else if (Array.isArray(item)) {
-        return this.writeFile(
-          item[0],
-          item[1],
-          item[2]
-        )
-      } else if (item instanceof Object) {
-        return this.writeFile(
-          item.entry,
-          item.data,
-          item.name
-        )
       }
+
+      if (Array.isArray(item)) {
+        return this.writeFile(item[0], item[1], item[2]);
+      }
+
+      if (item instanceof Object) {
+        return this.writeFile(item.entry, item.data, item.name);
+      }
+
+      return null;
     });
 
     await Promise.all(queue);
@@ -340,13 +365,7 @@ class Filesystem {
    * @param {String} name The optional name to resolve the entry file to.
    */
   resolveEntryPath(entry, name) {
-    if (!entry instanceof Object) {
-      error('The defined entry does not match the Filesystem schema.');
-    }
-
-    if (!entry.dist) {
-      error('The current entry has no destination path defined.');
-    }
+    this.validateEntry(entry);
 
     if (name && typeof name !== 'string') {
       error([`Unable to resolve for ${entry.path}`, 'The given name is not a valid string.']);
@@ -369,6 +388,8 @@ class Filesystem {
    * @returns The filename of the defined entry.
    */
   resolveEntryName(entry) {
+    this.validateEntry(entry);
+
     return basename(entry.path, extname(entry.path));
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable class-methods-use-this */
 
 const chalk = require('chalk');
@@ -53,7 +54,7 @@ class Logger {
   log(message, details) {
     const { method, color } = Logger.getMessageProperties('log');
 
-    if (typeof message != 'string') {
+    if (typeof message !== 'string') {
       return;
     }
 
@@ -61,7 +62,7 @@ class Logger {
       if (message.endsWith(':')) {
         console[method](`${chalk[color](message)} ${chalk.gray(details)}`);
       } else {
-        console[method](`${chalk[color](message + ':')} ${chalk.gray(details)}`);
+        console[method](`${chalk[color](`${message}:`)} ${chalk.gray(details)}`);
       }
     } else {
       console[method](chalk[color](message));
@@ -92,7 +93,7 @@ class Logger {
         }
 
         // Adjusts the indenting to the unicode prefix for the last message.
-        if (i >= (message.length - 1)) {
+        if (i >= message.length - 1) {
           prefix = '\u0020\u0020\u2514';
         }
 
@@ -104,9 +105,7 @@ class Logger {
         }
       });
 
-      console[properties.method](
-        chalk[properties.color](messages)
-      );
+      console[properties.method](chalk[properties.color](messages));
     } else {
       console[properties.method](
         chalk[properties.color](properties.symbol ? symbols[properties.symbol] : ' ', message)

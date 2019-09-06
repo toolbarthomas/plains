@@ -3,7 +3,6 @@ const { resolve } = require('path');
 
 class ConfigLoader {
   constructor(config) {
-
     /**
      * Defines the default configuration Object for Plains.
      * The configuration will be used if it has not been adjusted by the custom
@@ -65,7 +64,6 @@ class ConfigLoader {
           }
         });
 
-
         // Validates each entry within the current (sub)configuration Object.
         Object.keys(defaults).forEach(name => {
           // Ignore worker configuration in order to support external workers.
@@ -79,20 +77,24 @@ class ConfigLoader {
 
         // Return the filtered and normalized configuration Object,
         return mergedConfig;
-      } else if (defaults && config) {
+      }
+
+      if (defaults && config) {
         // Return the current custom configuration value.
         return config;
-      } else if (!config) {
+      }
+
+      if (!config) {
         // Return the default configuration if there is no custom configuration.
         return defaults;
       }
 
       // Make sure that an actual configuration value is returned.
       return defaults;
-    } else if (config) {
-      if (option) {
-        throw Error(`Option: ${option} does not match the configuration schema`);
-      }
+    }
+
+    if (config && option) {
+      throw Error(`Option: ${option} does not match the configuration schema`);
     }
 
     return defaults;
