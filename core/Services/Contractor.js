@@ -59,12 +59,12 @@ class Contractor {
       handler: !async
         ? handler
         : () =>
-          new Promise((resolve, reject) => {
-            this.tasks[name].resolve = resolve;
-            this.tasks[name].reject = reject;
+            new Promise((resolve, reject) => {
+              this.tasks[name].resolve = resolve;
+              this.tasks[name].reject = reject;
 
-            handler();
-          }).catch(exception => exception),
+              handler();
+            }).catch(exception => exception),
       watch: watch || false,
     };
 
