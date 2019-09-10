@@ -72,7 +72,7 @@ class Watcher {
 
         this.watchers[task].timer = setTimeout(async () => {
           this.watchers[task].instance.close();
-        }, 10000);
+        }, 1000);
 
         this.watchers[task].delay = setTimeout(async () => {
           await this.services.Contractor.publish(task);

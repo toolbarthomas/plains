@@ -8,6 +8,8 @@ class Contractor {
   constructor() {
     // Map with all the worker subscriptions.
     this.tasks = new Map();
+    // Map with all the subscribed plugins.
+    this.plugins = new Map();
     this.task = false;
   }
 
@@ -69,6 +71,22 @@ class Contractor {
     log('Subscribed task', name);
   }
 
+  subscribePlugin(name, plugin, handler) {
+    if (!this.tasks[name]) {
+      error(`${name} has not been defined as task.`);
+    }
+
+    const initialPlugins = this.plugins.has(name)
+      ? this.plugins.get(name)
+      : {};
+
+    const plugins = {};
+    plugins[plugin] = handler;
+
+    this.plugins.set(
+      name, Object.assign(initialPlugins, plugins));
+  }
+
   /**
    * Call the subscribed task.
    *
@@ -88,8 +106,43 @@ class Contractor {
       this.tasks[name].handler(args);
     }
 
+    this.postPublish(name);
+
     success(`Finished: ${name}`);
   }
+
+  /**
+   *
+   */
+  postPublish(name) {
+    if (!this.plugins.has(name) || !this.plugins.get(name) instanceof Object) {
+      return;
+    }
+
+    const queue = this.plugins.get(name);
+
+    log('Starting plugins for', name);
+
+    Object.keys(queue).forEach((key) => {
+      const fn = this.plugins.get(name)[key];
+
+      if (typeof fn !== 'function') {
+        return;
+      }
+
+      log(`Running plugin`, key);
+
+      fn();
+    })
+
+    Object.keys(this.plugins.get(name)).forEach(key => {
+      const plugin = this.plugins.get(name)[key];
+
+      if (typeof plugin.run === 'function') {
+        plugin.run();
+      }
+    });
+  };
 
   /**
    * Resolves the subscribed handler if it has been subscribed as an

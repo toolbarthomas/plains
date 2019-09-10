@@ -10,6 +10,7 @@ const Store = require('./Services/Store');
 const Cleaner = require('./Workers/Cleaner');
 const SassCompiler = require('./Workers/SassCompiler');
 
+const StyleOptimizer = require('./Plugins/StyleOptimizer');
 const Watcher = require('./Plugins/Watcher');
 
 /**
@@ -50,6 +51,7 @@ class Plains {
      * between Services.
      */
     this.plugins = {
+      StyleOptimizer: new StyleOptimizer(this.services),
       Watcher: new Watcher(this.services),
     };
   }
@@ -125,7 +127,10 @@ class Plains {
 
     if (task) {
       await this.services.Contractor.run();
-      this.plugins.Watcher.run();
+
+      Object.keys(this.plugins).forEach(plugin => {
+        this.plugins[plugin].run();
+      });
     }
   }
 }
