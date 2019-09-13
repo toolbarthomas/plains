@@ -7,21 +7,14 @@ class StyleOptimizer {
   }
 
   mount() {
-    this.services.Contractor.subscribePlugin('sass', 'styleOptimizer', this.run.bind(this));
+    // Assign the actual plugin to the task queue.
+    this.services.Contractor.assignPlugin('StyleOptimizer', 'sass', this.run.bind(this));
   }
 
   run() {
-    const stack = this.services.Filesystem.getStack('sass');
+    const directories = this.services.Filesystem.resolveStackDirectories('sass');
 
-    console.log(stack);
-
-    // if (!this.stacks || !this.stacks.length) {
-    //   return;
-    // }
-
-    // this.stacks.forEach(stack => {
-    //   console.log(stack);
-    // });
+    console.log(directories);
   }
 }
 

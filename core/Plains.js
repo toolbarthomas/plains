@@ -122,16 +122,11 @@ class Plains {
   async run() {
     const { task } = this.args;
 
-    // Sass -> Run
-    // Watch ->
-
-    if (task) {
-      await this.services.Contractor.run();
-
-      Object.keys(this.plugins).forEach(plugin => {
-        this.plugins[plugin].run();
-      });
+    if (!task) {
+      error('No task has been defined');
     }
+
+    await this.services.Contractor.run();
   }
 }
 

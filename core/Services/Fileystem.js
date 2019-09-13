@@ -127,6 +127,17 @@ class Filesystem {
     return map;
   }
 
+  resolveStackDirectories(stack) {
+    const initialStack = this.getStack(stack);
+
+    const directories = initialStack.map(item => (item.dist ? item.dist : null));
+    const resolvedDirectories = directories.filter(
+      (entry, index) => directories.indexOf(entry) === index
+    );
+
+    return resolvedDirectories;
+  }
+
   /**
    * Returns an array with all entry paths from the defined stack;
    *

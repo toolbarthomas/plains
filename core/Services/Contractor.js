@@ -71,24 +71,45 @@ class Contractor {
     log('Subscribed task', name);
   }
 
-  subscribePlugin(name, plugin, handler) {
-    if (!this.tasks[name]) {
-      error(`${name} has not been defined as task.`);
+  /**
+   * Assign the defined plugin to the subscribed Contractor task that will be
+   * called during the postPublish initiation.
+   *
+   * @param {String} plugin The unique name of the plugin to assign.
+   * @param {Array|String} name The tasks to assign the plugin to.
+   * @param {Function} handler The function that will be assigned
+   */
+  assignPlugin(plugin, task, handler) {
+    if (!task) {
+      error(`Unable to subscribe plugin, no task has been assigned to it.`);
     }
 
-    const initialPlugins = this.plugins.has(name)
-      ? this.plugins.get(name)
-      : {};
+    if (!plugin) {
+      error(`Unable to subcribe plugin, no name has been given.`);
+    }
 
-    const plugins = {};
-    plugins[plugin] = handler;
+    const tasks = Array.isArray(task) ? task : [task];
 
-    this.plugins.set(
-      name, Object.assign(initialPlugins, plugins));
+    // Subscribe the plugin to each defined task.
+    tasks.forEach(initialTask => {
+      if (!this.tasks[initialTask]) {
+        error(`${initialTask} has not been defined as task.`);
+      }
+
+      // Merge the new plugins with the subscribed plugins Object.
+      const initialPlugins = this.plugins.has(initialTask) ? this.plugins.get(initialTask) : {};
+
+      const plugins = {};
+      plugins[plugin] = handler;
+
+      log(`${plugin} plugin subscribed to task`, initialTask);
+
+      this.plugins.set(initialTask, Object.assign(initialPlugins, plugins));
+    });
   }
 
   /**
-   * Call the subscribed task.
+   * Initialze the defined task if it has been subscribed.
    *
    * @param {String} name The task that will be initiated.
    * @param {Object} args Optional function arguments for the initial handler.
@@ -112,19 +133,22 @@ class Contractor {
   }
 
   /**
+   * Post hook that will be initiated after the publish method has been called.
    *
+   * @param {String} task Initiate the plugins that have been subscribed to
+   * the defined task.
    */
-  postPublish(name) {
-    if (!this.plugins.has(name) || !this.plugins.get(name) instanceof Object) {
+  postPublish(task) {
+    if (!this.plugins.has(task) || !(this.plugins.get(task) instanceof Object)) {
       return;
     }
 
-    const queue = this.plugins.get(name);
+    const queue = this.plugins.get(task);
 
-    log('Starting plugins for', name);
+    log('Starting plugins for', task);
 
-    Object.keys(queue).forEach((key) => {
-      const fn = this.plugins.get(name)[key];
+    Object.keys(queue).forEach(key => {
+      const fn = this.plugins.get(task)[key];
 
       if (typeof fn !== 'function') {
         return;
@@ -133,16 +157,8 @@ class Contractor {
       log(`Running plugin`, key);
 
       fn();
-    })
-
-    Object.keys(this.plugins.get(name)).forEach(key => {
-      const plugin = this.plugins.get(name)[key];
-
-      if (typeof plugin.run === 'function') {
-        plugin.run();
-      }
     });
-  };
+  }
 
   /**
    * Resolves the subscribed handler if it has been subscribed as an
