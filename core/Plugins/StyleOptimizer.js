@@ -13,8 +13,6 @@ class StyleOptimizer {
 
   run() {
     const directories = this.services.Filesystem.resolveStackDirectories('sass');
-
-    console.log(directories);
   }
 }
 

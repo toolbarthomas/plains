@@ -1,4 +1,4 @@
-const Plains = require('./core/Plains');
+const Plains = require('./lib/Plains');
 
 const App = new Plains({
   workers: {

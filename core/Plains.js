@@ -1,7 +1,7 @@
 const { error, log } = require('./Utils/Logger');
 
 const Argv = require('./Common/Argv');
-const ConfigLoader = require('./Common/ConfigLoader');
+const ConfigLoader = require('../lib/Common/ConfigLoader');
 
 const Contractor = require('./Services/Contractor');
 const Filesystem = require('./Services/Fileystem');
