@@ -28,7 +28,7 @@ class SassCompiler {
   mount() {
     // Get the specific sassCompiler configuraiton that has been defined
     // by the ConfigManager service.
-    this.config = this.services.Store.get('plains', 'workers')[this.task] || {};
+    this.config = this.services.Store.get('application', 'workers')[this.task] || {};
 
     // Create a new Filesystem stack to define the sass entry files.
     this.services.Filesystem.createStack(this.task);
@@ -80,7 +80,7 @@ class SassCompiler {
           importer: globImporter(),
           includePaths: [this.services.Filesystem.resolveSource()],
           outFile: this.services.Filesystem.resolveEntryPath(entry, '{name}.css'),
-          sourceMap: this.services.Store.get('plains', 'devMode'),
+          sourceMap: this.services.Store.get('argv', 'mode') === 'development',
         },
         async (exception, chunk) => {
           if (exception) {
@@ -120,7 +120,7 @@ class SassCompiler {
         );
       });
 
-      if (this.services.Store.get('plains', 'devMode')) {
+      if (this.services.Store.get('argv', 'mode') === 'development') {
         warning('Done compiling, but encountered some errors.');
       } else {
         error(`Encountered some errors during compilation...`);
