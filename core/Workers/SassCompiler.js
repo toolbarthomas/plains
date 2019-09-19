@@ -6,7 +6,7 @@ const { error, info, success, warning } = require('../Utils/Logger');
  * Core worker for Plains that compiles Sass files to stylesheets with optional
  * mapping.
  */
-class SassCompiler {
+class StyleCompiler {
   constructor(services) {
     this.services = services;
     this.task = 'sass';
@@ -23,10 +23,10 @@ class SassCompiler {
   }
 
   /**
-   * Prepare the SassCompiler instance.
+   * Prepare the StyleCompiler instance.
    */
   mount() {
-    // Get the specific sassCompiler configuraiton that has been defined
+    // Get the specific StyleCompiler configuraiton that has been defined
     // by the ConfigManager service.
     this.config = this.services.Store.get('application', 'workers')[this.task] || {};
 
@@ -37,12 +37,12 @@ class SassCompiler {
     // @TODO include support for config entries.
     this.services.Filesystem.insertEntry(this.task, this.config.entry);
 
-    // Subscribe the SassCompiler as Contractor task.
+    // Subscribe the StyleCompiler as Contractor task.
     this.services.Contractor.subscribe(this.task, this.init.bind(this), true, true);
   }
 
   /**
-   * Run the Sasscompiler!
+   * Run the StyleCompiler!
    */
   async init() {
     // Get the defined entry file.
@@ -133,4 +133,4 @@ class SassCompiler {
   }
 }
 
-module.exports = SassCompiler;
+module.exports = StyleCompiler;

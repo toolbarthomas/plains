@@ -27,6 +27,7 @@
     "@babel/cli": "^7.6.0",
     "@babel/core": "^7.6.0",
     "@babel/preset-env": "^7.6.0",
+    "browser-sync": "^2.26.7",
     "chalk": "^2.4.2",
     "eslint": "^6.3.0",
     "eslint-config-airbnb-base": "^14.0.0",
@@ -34,15 +35,15 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.0",
     "glob": "^7.1.4",
+    "imagemin": "^7.0.0",
+    "imagemin-svgo": "^7.0.0",
     "log-symbols": "^3.0.0",
     "mkdirp": "^0.5.1",
     "module-config-loader": "^0.3.2",
     "node-sass": "^4.12.0",
     "node-sass-glob-importer": "^5.3.2",
     "prettier": "^1.18.2",
-    "rimraf": "^3.0.0"
-  },
-  "dependencies": {
-    "browser-sync": "^2.26.7"
+    "rimraf": "^3.0.0",
+    "svgstore": "^3.0.0-2"
   }
 }

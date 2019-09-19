@@ -8,7 +8,7 @@ const Filesystem = require('./Services/Fileystem');
 const Store = require('./Services/Store');
 
 const Cleaner = require('./Workers/Cleaner');
-const SassCompiler = require('./Workers/SassCompiler');
+const StyleCompiler = require('./Workers/StyleCompiler');
 
 const StyleOptimizer = require('./Plugins/StyleOptimizer');
 const Watcher = require('./Plugins/Watcher');
@@ -43,7 +43,7 @@ class Plains {
      */
     this.workers = {
       Cleaner: new Cleaner(this.services),
-      SassCompiler: new SassCompiler(this.services),
+      StyleCompiler: new StyleCompiler(this.services),
     };
 
     /**
