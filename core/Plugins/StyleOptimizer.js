@@ -12,7 +12,7 @@ class StyleOptimizer {
   }
 
   run() {
-    const directories = this.services.Filesystem.resolveStackDirectories('sass');
+    // const directories = this.services.Filesystem.resolveStackDirectories('sass');
   }
 }
 
