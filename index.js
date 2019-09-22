@@ -8,6 +8,4 @@ const App = new Plains({
   },
 });
 
-App.boot();
-
-App.run();
+App.start();
