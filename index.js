@@ -1,13 +1,6 @@
-const Plains = require('./core/Plains');
-
+const Plains = require("./lib/Plains");
 const App = new Plains({
-  workers: {
-    sass: {
-      entry: ['base/stylesheets/index.scss', 'base/stylesheets/foo.scss'],
-    },
-  },
+  src: "foo"
 });
 
-App.boot();
-
-App.run();
+App.start();
