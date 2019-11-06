@@ -1,6 +1,4 @@
-const Plains = require("./lib/Plains");
-const App = new Plains({
-  src: "foo"
-});
+const Plains = require('./lib/Plains');
+const App = new Plains({});
 
 App.start();
