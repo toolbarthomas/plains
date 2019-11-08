@@ -27,6 +27,7 @@
     "module-config-loader": "^0.3.2"
   },
   "devDependencies": {
+    "chokidar": "^3.3.0",
     "glob": "^7.1.5",
     "mkdirp": "^0.5.1",
     "node-sass": "^4.13.0",
